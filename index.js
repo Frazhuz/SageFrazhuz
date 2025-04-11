@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const axios = require('axios');
 const path = require('path');
@@ -13,6 +14,12 @@ const client = new Client({
 
 // Токен бота (должен быть установлен в переменных окружения)
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
+
+// Запускаем бота
+client.login(process.env.DISCORD_TOKEN).catch(err => {
+  console.error('Ошибка входа:', err);
+  process.exit(1);
+});
 
 // Базовый URL репозитория Pathfinder 2e на GitHub
 const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/foundryvtt/pf2e/master/packs/';
@@ -622,5 +629,4 @@ async function sendTsvFile(message, npcName, tsvData) {
   });
 }
 
-// Запускаем бота
-client.login(DISCORD_TOKEN);
+
