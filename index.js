@@ -17,7 +17,7 @@ client.on('messageCreate', message => {
   if (message.author.bot) return;
 
   if (message.content === '!ping') {
-    message.channel.send('Pong!');
+    message.channel.send('СЛАВА ВБИЛЧУ!');
   }
 });
 
