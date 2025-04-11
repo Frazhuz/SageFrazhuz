@@ -16,7 +16,7 @@ const client = new Client({
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 
 // Запускаем бота
-client.login(process.env.DISCORD_TOKEN).catch(err => {
+client.login(DISCORD_TOKEN).catch(err => {
   console.error('Ошибка входа:', err);
   process.exit(1);
 });
@@ -26,9 +26,6 @@ const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/foundryvtt/pf2e/maste
 
 // Команды бота
 const PREFIX = '!'; // Префикс команд
-const COMMANDS = {
-  RPG_SAGE: 'rpgsage' // Основная команда для работы с RPG Sage
-};
 
 // Обработчик события готовности бота
 client.on('ready', () => {
@@ -45,22 +42,22 @@ client.on('messageCreate', async message => {
   const command = args.shift().toLowerCase();
 
   // Обрабатываем команду rpgsage
-  if (command === COMMANDS.RPG_SAGE) {
+  if (command === 'import') {
     try {
-      await handleRpgSageCommand(message, args);
+      await handleImport(message, args);
     } catch (error) {
-      console.error('Ошибка обработки команды rpgsage:', error);
+      console.error('Ошибка обработки команды import:', error);
       message.reply('Произошла ошибка при обработке вашей команды.');
     }
   }
 });
 
 /**
- * Обработчик команды !rpgsage
+ * Обработчик команды !import
  * @param {Message} message - Объект сообщения Discord
  * @param {string[]} args - Аргументы команды
  */
-async function handleRpgSageCommand(message, args) {
+async function handleImport(message, args) {
   // Разбираем флаги и аргументы
   const { flags, pathArg } = parseArgs(args);
   
@@ -168,9 +165,9 @@ function sendHelpMessage(message) {
 Этот бот извлекает информацию о NPC и опасностях из репозитория Pathfinder Second Edition для Foundry и генерирует TSV-файл для [RPG Sage Bot](https://rpgsage.io/).
 
 **Примеры использования:**
-1. \`!rpgsage pathfinder-monster-core/kobold-warrior.json\`
-2. \`!rpgsage -l https://github.com/foundryvtt/pf2e/blob/master/packs/pathfinder-monster-core/kobold-warrior.json\`
-3. \`!rpgsage -s kobold warrior\`
+1. \`!import pathfinder-monster-core/kobold-warrior.json\`
+2. \`!import -l https://github.com/foundryvtt/pf2e/blob/master/packs/pathfinder-monster-core/kobold-warrior.json\`
+3. \`!import -s kobold warrior\`
 
 В третьем примере сначала ищется файл с именем kobold-warrior.json. Если найдено точное совпадение, генерируется TSV, иначе выводится список путей к файлам с похожим именем.
 
@@ -178,7 +175,7 @@ function sendHelpMessage(message) {
 
 Алиас генерируется на основе имени. Его также можно указать отдельно с помощью флага -a.
 
-4. \`!rpgsage pathfinder-monster-core/kobold-warrior.json -a kwr\`
+4. \`!import pathfinder-monster-core/kobold-warrior.json -a kwr\`
   `;
   
   message.reply(helpText);
