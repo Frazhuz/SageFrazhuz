@@ -20,9 +20,16 @@ if (!isGlobal && !GUILD_ID) {
 
 
 if (args.length === 0) {
-    console.error('❌ Ошибка: Не указаны команды для регистрации.');
-    console.info('ℹ Использование: node register.js <команда1:описание1> <команда2:описание2> ... --global (при необходимости глобальной регистрации)');
-    console.info('Пример: node register.js ping:"Ответить Pong!" greet:"Поприветствовать пользователя"');
+    console.info(`node register.js <имя_команды>:"Описание команды"
+                 ;<имя_опции>:"Описание опции":<тип>:<true|false>[:autocomplete][:key1=Название1,key2=Название2][:min=Число][:max=Число][:minLength=N][:maxLength=N]
+                 ... --global
+    `);
+    console.info(`Пример: node register.js color:"Выбрать цвет"
+    ;shade:"Оттенок":string:true:light=Светлый,dark=Тёмный
+    ;customColor:"Пользовательский HEX":string:false:minLength=3:maxLength=7
+    ;format:"Формат цвета":string:true:autocomplete
+    --global
+    `);
     process.exit(1);
 }
 
