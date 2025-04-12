@@ -2,7 +2,8 @@ require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const commands = {
   ping: require('./commands/ping'),
-  say: require('./commands/say')
+  say: require('./commands/say'),
+  import: require('./commands/import/import'),
 };
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
@@ -25,16 +26,21 @@ client.on('ready', () => {
 });
 
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isChatInputCommand()) return;
-
-    switch (interaction.commandName) {
-    case 'ping':
-      await commands.ping.execute(interaction);
-      break;
-    case 'say':
-      await commands.say.execute(interaction);
-      break;
-    default:
-      console.warn(`Неизвестная команда: ${interaction.commandName}`);
-    }
+  if (!interaction.isChatInputCommand()) return;
+  
+  const command = commands[interaction.commandName];
+  
+  if (!command) {
+    await interaction.reply({
+      content: 'This functionality will be written in the future.', 
+      ephemeral: true 
+    });
+    return;
+  }
+  
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(`Ошибка в команде ${interaction.commandName}:`, error);
+    await interaction.reply({ content: '❌ Error.', ephemeral: true });
 });
