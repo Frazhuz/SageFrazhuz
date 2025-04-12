@@ -34,7 +34,7 @@ if (args.length === 0) {
 }
 
 
-const commandArgs = isGlobal ? args.filter(arg => arg !== '--global") : args;
+const commandArgs = isGlobal ? args.filter(arg => arg !== "--global") : args;
 
 const optionTypeMap = {
     string: ApplicationCommandOptionType.String,
