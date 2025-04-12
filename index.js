@@ -1,6 +1,8 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 
+console.log('Что ж, новая попытка.');
+
 const loadCommand = (path) => {
   try {
     delete require.cache[require.resolve(path)];
@@ -24,9 +26,9 @@ const loadCommand = (path) => {
 };
 
 const commands = {
-  ping: loadCommand('./commands/ping.js'),
-  say: loadCommand('./commands/say.js'),
-  import: loadCommand('./commands/import/import.js'),
+  ping: loadCommand('./commands/ping'),
+  say: loadCommand('./commands/say'),
+  import: loadCommand('./commands/import/import'),
 };
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
