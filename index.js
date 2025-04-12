@@ -6,7 +6,7 @@ console.log('Что ж, новая попытка.');
 const loadCommand = (path) => {
   try {
     if (!command.execute) {
-      console.error(`У команды из ${path} нет execute.`);
+      console.log(`У команды из ${path} нет execute.`);
       return {
         execute: async (interaction) => {
           await interaction.reply({ content: '⚠️ This command is temporarily unavailable. Execute is missing.' });
@@ -15,7 +15,7 @@ const loadCommand = (path) => {
     }
     return require(path);
   } catch (error) {
-    console.error(`Не удалось загрузить команду из ${path}:`, error);
+    console.log(`Не удалось загрузить команду из ${path}`);
     return {
       execute: async (interaction) => {
         await interaction.reply({ content: '⚠️ This command is temporarily unavailable. Loading is failed.' });
@@ -27,7 +27,7 @@ const loadCommand = (path) => {
 const commands = {
   ping: loadCommand('./commands/ping'),
   say: loadCommand('./commands/say'),
-  import: loadCommand('./commands/import/import'),
+  import: loadCommand('./commands/import/import')
 };
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
