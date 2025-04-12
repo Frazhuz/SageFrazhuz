@@ -1,3 +1,5 @@
+const { generateTsv } = require('./generateTSV');
+
 module.exports = {
   execute: async (interaction) => {
     const tsvData = generateTsv()
