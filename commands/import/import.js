@@ -1,6 +1,6 @@
 module.exports = {
   execute: async (interaction) => {
-    const { generateTsv } = await import('./generateTsv');
+    const { generateTsv } = await import('./generateTsv.js');
     const { AttachmentBuilder } = await import('discord.js');
     
     const tsvData = generateTsv()
