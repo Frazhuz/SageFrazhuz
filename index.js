@@ -8,10 +8,7 @@ const loadCommand = (path) => {
     console.error(`Не удалось загрузить команду из ${path}:`, error);
     return {
       execute: async (interaction) => {
-        await interaction.reply({ 
-          content: '⚠️ This command is temporarily unavailable.', 
-          ephemeral: true 
-        });
+        await interaction.reply({ content: '⚠️ This command is temporarily unavailable.' });
       }
     };
   }
@@ -54,10 +51,7 @@ client.on('interactionCreate', async interaction => {
   const command = commands[interaction.commandName];
   
   if (!command) {
-    await interaction.reply({
-      content: 'This functionality will be written in the future.', 
-      ephemeral: true 
-    });
+    await interaction.reply({ content: 'This functionality will be written in the future.' });
     return;
   }
   
@@ -65,6 +59,6 @@ client.on('interactionCreate', async interaction => {
     await command.execute(interaction);
   } catch (error) {
     console.error(`Ошибка в команде ${interaction.commandName}:`, error);
-    await interaction.reply({ content: '❌ Error.', ephemeral: true });
+    await interaction.reply({ content: '❌ Error.' });
   }
 });
