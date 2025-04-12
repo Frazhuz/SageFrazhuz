@@ -1,9 +1,26 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
+
+const loadCommand = (path) => {
+  try {
+    return require(path);
+  } catch (error) {
+    console.error(`Не удалось загрузить команду из ${path}:`, error);
+    return {
+      execute: async (interaction) => {
+        await interaction.reply({ 
+          content: '⚠️ This command is temporarily unavailable.', 
+          ephemeral: true 
+        });
+      }
+    };
+  }
+};
+
 const commands = {
-  ping: require('./commands/ping'),
-  say: require('./commands/say'),
-  import: require('./commands/import/import'),
+  ping: loadCommand('./commands/ping.js'),
+  say: loadCommand('./commands/say.js'),
+  import: loadCommand('./commands/import/import.js'),
 };
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
