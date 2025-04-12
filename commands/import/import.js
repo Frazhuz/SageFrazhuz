@@ -1,4 +1,4 @@
-const { generateTsv } = require('./generateTSV');
+const generateTsv = require('./generateTSV');
 
 module.exports = {
   execute: async (interaction) => {
