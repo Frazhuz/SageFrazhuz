@@ -1,4 +1,4 @@
-const { generateTsv } = require('./generateTSV');
+const generateTsv = require('./generateTSV');
 const { AttachmentBuilder } = require('discord.js'); // Добавьте импорт
 
 module.exports = {
