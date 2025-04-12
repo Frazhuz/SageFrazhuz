@@ -5,15 +5,16 @@ console.log('Что ж, новая попытка.');
 
 const loadCommand = (path) => {
   try {
+    const command = require(path);
     if (!command.execute) {
       console.log(`У команды из ${path} нет execute.`);
       return {
         execute: async (interaction) => {
           await interaction.reply({ content: '⚠️ This command is temporarily unavailable. Execute is missing.' });
         }
-      }
+      };
     }
-    return require(path);
+    return command;
   } catch (error) {
     console.log(`Не удалось загрузить команду из ${path}`);
     return {
