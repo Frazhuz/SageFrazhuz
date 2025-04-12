@@ -12,7 +12,7 @@ if (!DISCORD_TOKEN || !CLIENT_ID) {
 
 const args = process.argv.slice(2);
 
-const isGlobal = args.includes('--global");
+const isGlobal = args.includes("--global");
 if (!isGlobal && !GUILD_ID) {
     console.error('❌ Ошибка: Не указан GUILD_ID в .env');
     process.exit(1);
