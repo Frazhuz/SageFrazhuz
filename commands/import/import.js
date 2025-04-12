@@ -4,32 +4,25 @@ const { AttachmentBuilder } = require('discord.js'); // Добавьте имп�
 module.exports = {
   execute: async (interaction) => {
     try {
-      // Генерируем TSV данные
       const tsvData = generateTsv();
-      
-      // Создаем файловое вложение
-      const file = new AttachmentBuilder(Buffer.from(tsvData), { 
-        name: 'data.tsv' 
-      });
+      const file = new AttachmentBuilder(Buffer.from(tsvData), { name: 'data.tsv' });
 
-      // Отправляем первоначальный ответ с файлом
       const replyMessage = await interaction.reply({ 
-        content: "Генерация TSV...", // Исправлено: content вместо contetn
-        files: [file], // Раскомментировано
-        fetchReply: true // Временно оставляем, пока не обновим библиотеку
+        content: "Генерация TSV...", 
+        files: [file], 
+        fetchReply: true 
       });
 
-      // Получаем URL вложения
       const attachmentUrl = replyMessage.attachments.first()?.url;
       
       if (!attachmentUrl) {
-        throw new Error("Не удалось получить ссылку на файл");
+        console.error("Не удалось получить ссылку на файл в команде import");
+        return;
       }
 
-      // Редактируем исходное сообщение
       await replyMessage.edit({
         content: `sage! npc import tsv="${attachmentUrl}"`,
-        files: [] // Убираем повторную отправку файла
+        files: [file] 
       });
 
     } catch (error) {
