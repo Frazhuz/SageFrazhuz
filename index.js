@@ -3,12 +3,21 @@ const { Client, GatewayIntentBits } = require('discord.js');
 
 const loadCommand = (path) => {
   try {
+    delete require.cache[require.resolve(path)];
+    if (!command.execute) {
+      console.error(`У команды из ${path} нет execute.`);
+      return {
+        execute: async (interaction) => {
+          await interaction.reply({ content: '⚠️ This command is temporarily unavailable. Execute is missing.' });
+        }
+      }
+    }
     return require(path);
   } catch (error) {
     console.error(`Не удалось загрузить команду из ${path}:`, error);
     return {
       execute: async (interaction) => {
-        await interaction.reply({ content: '⚠️ This command is temporarily unavailable.' });
+        await interaction.reply({ content: '⚠️ This command is temporarily unavailable. Loading is failed.' });
       }
     };
   }
