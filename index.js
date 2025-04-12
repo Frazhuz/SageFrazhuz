@@ -10,7 +10,7 @@ const loadCommand = (path) => {
       console.log(`У команды из ${path} нет execute.`);
       return {
         execute: async (interaction) => {
-          await interaction.reply({ content: '⚠️ This command is temporarily unavailable. Execute is missing.' });
+          await interaction.reply({ '⚠️ This command is temporarily unavailable. Execute is missing.' });
         }
       };
     }
@@ -19,7 +19,7 @@ const loadCommand = (path) => {
     console.log(`Не удалось загрузить команду из ${path}`);
     return {
       execute: async (interaction) => {
-        await interaction.reply({ content: '⚠️ This command is temporarily unavailable. Loading is failed.' });
+        await interaction.reply({ '⚠️ This command is temporarily unavailable. Loading is failed.' });
       }
     };
   }
@@ -70,6 +70,6 @@ client.on('interactionCreate', async interaction => {
     await command.execute(interaction);
   } catch (error) {
     console.error(`Ошибка в команде ${interaction.commandName}:`, error);
-    await interaction.reply({ content: '❌ Error.' });
+    await interaction.reply({ '❌ Error.' });
   }
 });
