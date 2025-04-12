@@ -1,8 +1,5 @@
 module.exports = {
   execute: async (interaction) => {
-    const { generateTsv } = await import('./generateTsv.js');
-    const { AttachmentBuilder } = await import('discord.js');
-    
     const tsvData = generateTsv()
     const file = new AttachmentBuilder(Buffer.from(tsvData), { name: 'data.tsv' });
     const replyMessage = await interaction.reply({ files: [file], fetchReply: true });
