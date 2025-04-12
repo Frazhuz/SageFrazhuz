@@ -5,7 +5,7 @@ module.exports = {
     const tsvData = generateTsv();
     //const file = new AttachmentBuilder(Buffer.from(tsvData), { name: 'data.tsv' });
     const replyMessage = await interaction.reply({ 
-      contetn: "тест",
+      content: "тест",
       //files: [file], 
       fetchReply: true });
     const attachmentUrl = replyMessage.attachments.first()?.url;
