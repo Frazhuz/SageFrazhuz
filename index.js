@@ -5,7 +5,6 @@ console.log('Что ж, новая попытка.');
 
 const loadCommand = (path) => {
   try {
-    delete require.cache[require.resolve(path)];
     if (!command.execute) {
       console.error(`У команды из ${path} нет execute.`);
       return {
