@@ -8,6 +8,13 @@ const commands = {
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 
+// Проверка наличия токена
+if (!DISCORD_TOKEN) {
+  console.error('Ошибка: DISCORD_TOKEN не найден в переменных окружения.');
+  console.log('Пожалуйста, создайте файл .env и добавьте DISCORD_TOKEN=ваш_токен');
+  process.exit(1);
+}
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -15,14 +22,13 @@ const client = new Client({
   ]
 });
 
-
 client.login(DISCORD_TOKEN).catch(err => {
   console.error('Ошибка входа:', err);
   process.exit(1);
 });
 
 client.on('ready', () => {
-    console.log(`Бот успешно запущен как ${client.user.tag}`);
+  console.log(`Бот успешно запущен как ${client.user.tag}`);
 });
 
 client.on('interactionCreate', async interaction => {
@@ -43,4 +49,5 @@ client.on('interactionCreate', async interaction => {
   } catch (error) {
     console.error(`Ошибка в команде ${interaction.commandName}:`, error);
     await interaction.reply({ content: '❌ Error.', ephemeral: true });
+  }
 });
