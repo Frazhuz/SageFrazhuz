@@ -28,7 +28,7 @@ const loadCommand = (path) => {
 const commands = {
   ping: loadCommand('./commands/ping.js'),
   say: loadCommand('./commands/say.js'),
-  import: loadCommand('./commands/import/import.js')
+  //import: loadCommand('./commands/import/import.js')
 };
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
