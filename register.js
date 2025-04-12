@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { REST, Routes } = require('discord.js');
+const { REST, Routes, ApplicationCommandOptionType } = require('discord.js');
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -21,13 +21,13 @@ if (!isGlobal && !GUILD_ID) {
 
 if (args.length === 0) {
     console.info(`node register.js <имя_команды>:"Описание команды"
-                 ;<имя_опции>:"Описание опции":<тип>:<true|false>[:autocomplete][:key1=Название1,key2=Название2][:min=Число][:max=Число][:minLength=N][:maxLength=N]
+                 ,<имя_опции>:"Описание опции"[:тип][:true|false][:autocomplete][:key1=Название1][:key2=Название2]...[:min=Число][:max=Число][:minLength=N][:maxLength=N]
                  ... --global
     `);
     console.info(`Пример: node register.js color:"Выбрать цвет"
-    ;shade:"Оттенок":string:true:light=Светлый,dark=Тёмный
-    ;customColor:"Пользовательский HEX":string:false:minLength=3:maxLength=7
-    ;format:"Формат цвета":string:true:autocomplete
+    ,shade:"Оттенок":string:true:light=Светлый,dark=Тёмный
+    ,customColor:"Пользовательский HEX":string:false:minLength=3:maxLength=7
+    ,format:"Формат цвета":string:true:autocomplete
     --global
     `);
     process.exit(1);
@@ -49,7 +49,7 @@ const optionTypeMap = {
 
     
 const commands = commandArgs.map(arg => {
-    const parts = arg.split(';').map(p => p.trim());
+    const parts = arg.split(',').map(p => p.trim());
 
     if (parts.length === 0 || !parts[0]) {
         console.error(`❌ Ошибка: Неправильный формат команды: "${arg}"`);
