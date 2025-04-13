@@ -62,7 +62,7 @@ class ErrorHandler {
           interaction,
           newEnvironment,
           error,
-          error.userMessage || DEFAULT_ERROR_MESSAGE
+          DEFAULT_ERROR_MESSAGE
         );
       }
     };
