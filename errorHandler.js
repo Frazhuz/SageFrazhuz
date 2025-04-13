@@ -46,6 +46,11 @@ class ErrorHandler {
     }
   }
 
+  static async handleError(interaction, environment, error, message) {
+    log(interaction, environment, error);
+    await reply(interaction, environment, message)
+  }
+
   static wrap(environment, handler) {
     const newEnvironment = environment + ERROR_ENVIRONMENTS.WRAP;
     
@@ -53,10 +58,10 @@ class ErrorHandler {
       try {
         await handler(interaction);
       } catch (error) {
-        this.log(interaction, newEnvironment, error);
-        await this.reply(
+        await this.handleError(
           interaction,
           newEnvironment,
+          error,
           error.userMessage || DEFAULT_ERROR_MESSAGE
         );
       }
