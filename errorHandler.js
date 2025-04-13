@@ -20,7 +20,7 @@ class ErrorHandler {
     console.error(
       `ERROR in ${environment}: ${context.username} (${context.userId}) ` +
       `on ${context.guildName} ` +
-      `during ${context.commandName}:\n${error.stack ?? error}`
+      `during ${context.commandName}:\n${error}`
     );
   }
 
