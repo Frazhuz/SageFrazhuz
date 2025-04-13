@@ -7,7 +7,7 @@ const loadCommand = (path) => {
   try {
     const command = require(path);
     if (!command.execute) {
-      console.log(`У команды из ${path} нет execute.`);
+      console.error(`У команды из ${path} нет execute.`);
       return {
         execute: async (interaction) => {
           await interaction.reply('⚠️ This command is temporarily unavailable. Execute is missing.');
@@ -16,7 +16,7 @@ const loadCommand = (path) => {
     }
     return command;
   } catch (error) {
-    console.log(`Не удалось загрузить команду из ${path}`);
+    console.error(`Не удалось загрузить команду из ${path}`, error);
     return {
       execute: async (interaction) => {
         await interaction.reply('⚠️ This command is temporarily unavailable. Loading is failed.' );
@@ -36,7 +36,6 @@ const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 // Проверка наличия токена
 if (!DISCORD_TOKEN) {
   console.error('Ошибка: DISCORD_TOKEN не найден в переменных окружения.');
-  console.log('Пожалуйста, создайте файл .env и добавьте DISCORD_TOKEN=ваш_токен');
   process.exit(1);
 }
 
@@ -58,10 +57,17 @@ client.on('ready', () => {
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
+
+  const username = interaction.user.username;
+  const userId = interaction.user.id;
+  const guildName = interaction.guild?.name || "ЛС";
+  const channelName = interaction.channel?.name || "(нет канала)";
+  const commandName = interaction.commandName;
   
-  const command = commands[interaction.commandName];
+  const command = commands[commandName];
   
   if (!command) {
+    console.error(`${username} (${userId}) попытался использовать еще не написанную команду ${commandName} в ${guildName} ${cnannelName}`);
     await interaction.reply('This functionality will be written in the future.');
     return;
   }
