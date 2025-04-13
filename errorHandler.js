@@ -41,7 +41,7 @@ class ErrorHandler {
     }
   }
 
-  static wrap(handler) {
+  static wrap(handler, errorMessage) {
     return async (interaction) => {
       try {
         await handler(interaction);
@@ -49,7 +49,7 @@ class ErrorHandler {
         this.log(error, interaction);
         await this.reply(
           interaction, 
-          error.userMessage || '❌ An error occurred while executing this command'
+          error.userMessage || errorMessage || '❌ An error occurred while executing this command'
         );
       }
     };
