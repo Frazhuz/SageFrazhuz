@@ -8,24 +8,20 @@ class ErrorHandler {
     };
   }
 
-  static log(error, interaction) {
+  static log(environment, interaction, error) {
     const context = this.getContext(interaction);
     console.error(
-      `[ERROR: ${context.username} (${context.userId}) ` +
+      `ERROR ${environment}: ${context.username} (${context.userId}) ` +
       `in ${context.guildName} ` +
       `during ${context.commandName}:\n${error.stack || error}`
     );
   }
 
-  static generalLog(error) {
-    console.error(error.stack || error);
-  }
-
   
-  static async reply(interaction, message) {
+  static async reply(environment, interaction, message) {
     try {
         if (!interaction.isRepliable()) {
-            console.warn("Interaction is no longer repliable.");
+            console.error(`ERROR ${environment}: Interaction is no longer repliable`);
             return;
         }
 
@@ -41,12 +37,12 @@ class ErrorHandler {
     }
   }
 
-  static wrap(handler, errorMessage) {
+  static wrap(environment, handler) {
     return async (interaction) => {
       try {
         await handler(interaction);
       } catch (error) {
-        this.log(error, interaction);
+        this.log(environment, error, interaction);
         await this.reply(
           interaction, 
           error.userMessage || errorMessage || '❌ An error occurred while executing this command'
