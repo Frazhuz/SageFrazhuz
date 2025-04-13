@@ -1,43 +1,7 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
-
-console.log('Что ж, новая попытка.');
-
-const loadCommand = (path) => {
-  try {
-    const command = require(path);
-    if (!command.execute) {
-      console.error(`У команды из ${path} нет execute.`);
-      return {
-        execute: async (interaction) => {
-          await interaction.reply('⚠️ This command is temporarily unavailable. Execute is missing.');
-        }
-      };
-    }
-    return command;
-  } catch (error) {
-    console.error(`Не удалось загрузить команду из ${path}`, error);
-    return {
-      execute: async (interaction) => {
-        await interaction.reply('⚠️ This command is temporarily unavailable. Loading is failed.' );
-      }
-    };
-  }
-};
-
-const commands = {
-  ping: loadCommand('./commands/ping.js'),
-  say: loadCommand('./commands/say.js'),
-  import: loadCommand('./commands/import/import.js')
-};
-
-const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-
-// Проверка наличия токена
-if (!DISCORD_TOKEN) {
-  console.error('Ошибка: DISCORD_TOKEN не найден в переменных окружения.');
-  process.exit(1);
-}
+const CommandLoader = require('./utils/commandLoader');
+const ErrorHandler = require('./utils/errorHandler');
 
 const client = new Client({
   intents: [
@@ -46,36 +10,59 @@ const client = new Client({
   ]
 });
 
-client.login(DISCORD_TOKEN).catch(err => {
-  console.error('Ошибка входа:', err);
-  process.exit(1);
+const commands = {
+  ping: CommandLoader.loadCommand('./commands/ping.js'),
+  say: CommandLoader.loadCommand('./commands/say.js'),
+  import: CommandLoader.loadCommand('./commands/import/import.js')
+};
+
+process.on('unhandledRejection', (error) => {
+  console.error('⚠️ Unhandled Promise Rejection:', error);
 });
+
+process.on('uncaughtException', (error) => {
+  console.error('⚠️ Uncaught Exception:', error);
+});
+
+if (!process.env.DISCORD_TOKEN) {
+  console.error('❌ Missing DISCORD_TOKEN in .env');
+  process.exit(1);
+}
 
 client.on('ready', () => {
-  console.log(`Бот успешно запущен как ${client.user.tag}`);
+  console.log(`🤖 Bot logged in as ${client.user.tag}`);
+  console.log(`🛠️ Loaded ${Object.keys(commands).length} commands`);
 });
 
-client.on('interactionCreate', async interaction => {
+client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
-  const username = interaction.user.username;
-  const userId = interaction.user.id;
-  const guildName = interaction.guild?.name || "ЛС";
-  const channelName = interaction.channel?.name || "(нет канала)";
-  const commandName = interaction.commandName;
-  
-  const command = commands[commandName];
-  
+  const command = commands[interaction.commandName];
   if (!command) {
-    console.error(`${username} (${userId}) попытался использовать еще не написанную команду ${commandName} в ${guildName} ${cnannelName}`);
-    await interaction.reply('This functionality will be written in the future.');
-    return;
+    ErrorHandler.log(
+      interaction,
+      'interaction',
+      `Attempted to call unknown command: ${interaction.commandName}`
+    );
+    return ErrorHandler.reply(
+      interaction,
+      'interaction',
+      '⚠️ This command does not exist.'
+    );
   }
-  
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(`Ошибка в команде ${interaction.commandName}:`, error);
-    await interaction.reply('❌ Error.');
-  }
+
+  await command.execute(interaction);
+});
+
+client.login(process.env.DISCORD_TOKEN)
+  .then(() => console.log('🔗 Connecting to Discord...'))
+  .catch((error) => {
+    console.error('❌ Login failed:', error);
+    process.exit(1);
+  });
+
+process.on('SIGINT', () => {
+  console.log('\n🔴 Received SIGINT. Shutting down...');
+  client.destroy();
+  process.exit(0);
 });
