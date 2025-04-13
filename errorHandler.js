@@ -46,7 +46,7 @@ class ErrorHandler {
     }
   }
 
-  static async handleError(interaction, environment, error, message) {
+  static async handleInteractionError(interaction, environment, error, message) {
     log(interaction, environment, error);
     await reply(interaction, environment, message)
   }
@@ -58,7 +58,7 @@ class ErrorHandler {
       try {
         await handler(interaction);
       } catch (error) {
-        await this.handleError(
+        await this.handleInteractionError(
           interaction,
           newEnvironment,
           error,
