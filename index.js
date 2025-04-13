@@ -36,20 +36,13 @@ client.on('ready', () => {
 
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
-
   const command = commands[interaction.commandName];
-  if (!command) {
-    ErrorHandler.log(
-      interaction,
-      'interaction',
-      `Attempted to call unknown command: ${interaction.commandName}`
+  if (!command) return ErrorHandler.handleInteractionError(
+    interaction,
+    'interaction',
+    `Attempted to call unknown command: ${interaction.commandName}`
+    '⚠️ This command does not exist.'
     );
-    return ErrorHandler.reply(
-      interaction,
-      'interaction',
-      '⚠️ This command does not exist.'
-    );
-  }
 
   await command.execute(interaction);
 });
