@@ -1,7 +1,7 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
-const CommandLoader = require('./utils/commandLoader');
-const ErrorHandler = require('./utils/errorHandler');
+import { Client, GatewayIntentBits } from 'discord.js';
+import loadCommand from './utils/commandLoader';
+import ErrorHandler from './utils/errorHandler';
 
 const client = new Client({
   intents: [
@@ -11,9 +11,9 @@ const client = new Client({
 });
 
 const commands = {
-  ping: CommandLoader.loadCommand('./commands/ping.js'),
-  say: CommandLoader.loadCommand('./commands/say.js'),
-  import: CommandLoader.loadCommand('./commands/import/import.js')
+  ping: loadCommand('./commands/ping.js'),
+  say: loadCommand('./commands/say.js'),
+  import: loadCommand('./commands/import/import.js')
 };
 
 process.on('unhandledRejection', (error) => {
@@ -40,7 +40,7 @@ client.on('interactionCreate', async (interaction) => {
   if (!command) return ErrorHandler.handleInteractionError(
     interaction,
     'interaction',
-    `Attempted to call unknown command: ${interaction.commandName}`
+    `Attempted to call unknown command: ${interaction.commandName}`,
     '⚠️ This command does not exist.'
     );
 
