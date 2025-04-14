@@ -1,4 +1,4 @@
-const ErrorHandler = require('./errorHandler');
+import ErrorHandler from './errorHandler.js';
 
 const ERROR_MESSAGES = {
   MISSING_PATH: () => 'Command path is required',
@@ -19,27 +19,28 @@ const ERROR_ENVIRONMENTS = {
   COMMAND: 'command'
 };
 
-const handleError = (errorKey, path, customMessage) => {
+function handleError(errorKey, path, customMessage) {
   console.error(ERROR_MESSAGES[errorKey](path));
   return {
-    execute: async (interaction) => 
+    execute: async (interaction) =>
       await ErrorHandler.reply(
         interaction,
         ERROR_ENVIRONMENTS[errorKey],
         customMessage ?? ERROR_REPLIES[errorKey]
       )
   };
-};
+}
 
-module.exports.loadCommand = (path) => {
+export default async function loadCommand(path) {
   if (!path) return handleError('MISSING_PATH');
   try {
-    const command = require(path);      
-    if (!command.execute) return handleError('MISSING_EXECUTE', path);
+    const command = await import(path);
+    if (!command?.execute) return handleError('MISSING_EXECUTE', path);
     return {
       ...command,
       execute: ErrorHandler.wrap(ERROR_ENVIRONMENTS.COMMAND, command.execute)
     };
+  } catch (error) {
+    return handleError('LOAD_FAILED', path, error.message);
   }
-  catch (error) return handleError('LOAD_FAILED', path, error.userMessage);
-};
+}
