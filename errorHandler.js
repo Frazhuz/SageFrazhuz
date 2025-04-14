@@ -5,7 +5,7 @@ const ERROR_ENVIRONMENTS = {
   WRAP: ', wrap'
 };
 
-class ErrorHandler {
+export default class ErrorHandler {
   static getContext(interaction) {
     return {
       username: interaction.user?.username ?? 'N/A',
@@ -47,12 +47,15 @@ class ErrorHandler {
   }
 
   static async handleInteractionError(interaction, environment, error, message) {
-    log(interaction, environment, error);
-    await reply(interaction, environment, message)
+    this.log(interaction, environment, error);
+    await this.reply(interaction, environment, message)
   }
 
   static wrap(environment, handler) {
     const newEnvironment = environment + ERROR_ENVIRONMENTS.WRAP;
+    if (typeof handler !== 'function') {
+      throw new Error('Handler must be a function');
+    }
     
     return async (interaction) => {
       try {
@@ -68,5 +71,3 @@ class ErrorHandler {
     };
   }
 }
-
-module.exports = ErrorHandler;
