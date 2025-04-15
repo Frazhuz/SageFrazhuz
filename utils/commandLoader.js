@@ -34,7 +34,7 @@ function handleError(errorKey, path, customMessage) {
 export default async function loadCommand(path) {
   if (!path) return handleError('MISSING_PATH');
   try {
-    const command = await import(path);
+    const {default: command} = await import(path);
     if (!command?.execute) return handleError('MISSING_EXECUTE', path);
     return {
       ...command,
