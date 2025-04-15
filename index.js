@@ -10,13 +10,14 @@ const client = new Client({
   ]
 });
 
+let commands = {};
 Promise.all([
   loadCommand('./commands/ping.js'),
   loadCommand('./commands/say.js'),
   loadCommand('./commands/import/import.js')
 ])
   .then(commandArray => {
-    const commands = Object.fromEntries(
+    commands = Object.fromEntries(
       commandArray.map(command => [command.name, command])
     );
   })
@@ -24,8 +25,6 @@ Promise.all([
   console.error('Failed to load commands:', error);
   });
   
-    
-
 process.on('unhandledRejection', (error) => {
   console.error('⚠️ Unhandled Promise Rejection:', error);
 });
