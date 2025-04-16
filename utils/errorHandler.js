@@ -57,7 +57,10 @@ export default class ErrorHandler {
   static log(error, errorMessages = {}, ...messageArgs) {
     if (!this.#validateError(error)) return;
     const errorMessage = this.#getErrorMessage(error, errorMessages, ...messageArgs);
-    const fullErrorMessage = errorMessage + (error.stack ? `\n${error.stack}` : '');
+    const fullErrorMessage = 
+      errorMessage + 
+      (error.primary ? `Primary error: ${error.primary}:\n` : '') + 
+      (error.stack ? `\n${error.stack}` : '');
     console.error(fullErrorMessage);
   }
   
@@ -70,6 +73,7 @@ export default class ErrorHandler {
       `ERROR: ${context.username} (${context.userId}) ` +
       `on ${context.guildName} ` +
       `during ${context.commandName}:\n${errorMessage}` +
+      (error.primary ? `Primary error: ${error.primary}:\n` : '') + 
       (error.stack ? `\n${error.stack}` : '');
     console.error(fullErrorMessage);
   }
