@@ -7,7 +7,7 @@ class KeyError extends Error {
     this.key = key;
     this.identificator = key;
     this.cause = cause;
-    if(cause.stack) this.stack = cause.stack;
+    if (cause?.stack) this.stack = cause.stack;
     this.messageArgs = messageArgs;
   }
 }
