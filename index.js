@@ -32,9 +32,9 @@ if (!process.env.DISCORD_TOKEN) {
 
 let commands = {};
 Promise.all([
-  loadCommand('ping', './commands/ping.js'),
-  loadCommand('say', './commands/say.js'),
-  loadCommand('import', './commands/import/import.js')
+  loadCommand('ping', './commands/ping.mjs'),
+  loadCommand('say', './commands/say.mjs'),
+  loadCommand('import', './commands/import/import.mjs')
 ])
   .then(commandArray => {
     commands = Object.fromEntries(commandArray); 
