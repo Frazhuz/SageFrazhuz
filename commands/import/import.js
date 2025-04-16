@@ -1,7 +1,7 @@
 const generateTsv = require('./generateTSV');
 const { AttachmentBuilder } = require('discord.js'); // Добавьте импорт
 
-export default class sageImport {
+class sageImport {
   execute: async (interaction) => {
     try {
       const tsvData = generateTsv();
@@ -35,3 +35,5 @@ export default class sageImport {
     }
   }
 };
+
+module.exports = sageImport;
