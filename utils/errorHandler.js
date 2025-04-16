@@ -51,7 +51,7 @@ class ErrorHandler {
   
   static #constructBasicMessage(messages, error) {
     const key = error.key;
-    const message = (error.message ?? messages.key.(...error.messageArgs)) + 
+    const message = (error.message ?? messages.key?.(...error.messageArgs)) + 
       (error.cause ? `\nCause: ${error.cause.message}` : '');
     return message;
   }
