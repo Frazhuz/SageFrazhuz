@@ -36,8 +36,9 @@ async function loadCommand(name, path) {
     //if (!command?.execute) return generateErrorReply('MISSING_EXECUTE', name);
     if (!command?.execute) throw new KeyError({ key: 'MISSING_EXECUTE', identificator: name });
     return [name, command];
-  } catch (error) {
-    return generateErrorReply('LOAD_FAILED', name, error);
+  } catch (cause) {
+    //return generateErrorReply('LOAD_FAILED', name, error);
+    throw new KeyError({ key: 'LOAD_FAILED', identificator: name, cause: cause });
   }
 }
 
