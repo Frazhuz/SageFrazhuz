@@ -51,7 +51,7 @@ class ErrorHandler {
   
   static #constructBasicMessage(messages, error) {
     const key = error.key;
-    const func = messages.key;
+    const func = messages[key];
     console.log(key);
     console.log(func);
     console.log(messages.FAILED_INITIALIZE?.() + "jjjj");
