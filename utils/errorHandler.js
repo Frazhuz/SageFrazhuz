@@ -51,7 +51,7 @@ class ErrorHandler {
   
   static #constructBasicMessage(messages, error) {
     const key = error.key;
-    const message = error.message + (error.message === '') + (error.message ?? 'tyuuhb') +
+    const message = (error.message ?? messages.key.(...error.messageArgs)) + 
       (error.cause ? `\nCause: ${error.cause.message}` : '');
     return message;
   }
@@ -77,13 +77,7 @@ class ErrorHandler {
   }
 
   static #constructError(messages, options) {
-    console.log(`#constructError, options: ${options.message === ''}`);
     let error = (options.stack) ? options : new KeyError(options);
-    error = new KeyError(options);
-    console.log(`#constructError, error: ${error.message === ''}`);
-    error = new KeyError();
-    console.log(`#constructError, error: ${error.message === ''}`);
-    console.log(`#constructError, error: ${error.interaction === ''}`);
     error.message = error.interaction 
       ? this.#constructAdvancedMessage(messages, error) 
       : this.#constructBasicMessage(messages, error);
@@ -91,14 +85,12 @@ class ErrorHandler {
   }
   
   
-  static log(messages, options) {
+  static log(messages = {}, options) {
     if (!options) {
       console.error(ErrorHandler.ERROR_MESSAGES.EMPTY_ERROR);
       return;
     }
-    console.log(`Log, options: ${options.message === ''}`);
     const error = this.#constructError(messages, options);
-    console.log(`Log, error: ${error.message === ''}`);
     console.error(`${error.name}: ${error.message}\n`);
   }
 
