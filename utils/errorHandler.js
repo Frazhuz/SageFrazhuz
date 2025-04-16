@@ -81,7 +81,6 @@ class ErrorHandler {
     error.message = error.interaction 
       ? this.#constructAdvancedMessage(messages, error) 
       : this.#constructBasicMessage(messages, error);
-    error.identificator ??= error.message.split(' ').slice(0, 4).join(' ') + '...';
     return error;
   }
   
