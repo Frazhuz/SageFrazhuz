@@ -25,10 +25,7 @@ const client = new Client({
   ]
 });
 
-if (!process.env.DISCORD_TOKEN) {
-  log({ key: 'NO_DISCORD_TOKEN' });
-  process.exit(1);
-}
+if (!process.env.DISCORD_TOKEN) log({ key: 'NO_DISCORD_TOKEN' });
 
 let commands = {};
 Promise.all([
@@ -42,7 +39,7 @@ Promise.all([
   })
   .then(() => console.log('🔗 Connecting to Discord...'))
   .catch((cause) => {
-    ErrorHandler.log(ERROR_MESSAGES, { key: 'FAILED_INITIALIZE', cause: cause });
+    log({ key: 'FAILED_INITIALIZE', cause: cause });
   });
   
 process.on(
