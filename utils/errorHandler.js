@@ -52,7 +52,10 @@ class ErrorHandler {
   static #constructBasicMessage(messages, error) {
     console.log(messages.FAILED_INITIALIZE?.() + "jjj");
     const key = error.key;
+    console.log(key);
+    console.log(messages.key?.() + "jjjj");
     const func = messages.key;
+    console.log(func?.() + "jjjjj");
     //Не ??, так как error.message по умолчанию ' '
     const message = (error.message || func?.(...error.messageArgs) || func?.() || func || key ) + 
       (error.cause ? `\nCause: ${error.cause.message}` : '');
@@ -80,7 +83,6 @@ class ErrorHandler {
   }
 
   static #constructError(messages, options) {
-    console.log(messages.FAILED_INITIALIZE?.() + "jj");
     let error = (options.stack) ? options : new KeyError(options);
     error.message = error.interaction 
       ? this.#constructAdvancedMessage(messages, error) 
@@ -94,7 +96,6 @@ class ErrorHandler {
       console.error(ErrorHandler.ERROR_MESSAGES.EMPTY_ERROR);
       return;
     }
-    console.log(messages.FAILED_INITIALIZE?.() + "j");
     const error = this.#constructError(messages, options);
     console.error(`${error.name}: ${error.message}\n`);
   }
