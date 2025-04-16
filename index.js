@@ -1,7 +1,7 @@
-import 'dotenv/config';
+require('dotenv').config();
 import { Client, GatewayIntentBits } from 'discord.js';
-import loadCommand from './utils/commandLoader';
-import { KeyError, ErrorHandler } from './utils/errorHandler.js';
+import loadCommand from './utils/commandLoader.mjs';
+import { KeyError, ErrorHandler } from './utils/errorHandler.mjs';
 
 const ERROR_MESSAGES = {
   NO_DISCORD_TOKEN: () => 'Missing DISCORD_TOKEN in .env',
