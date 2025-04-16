@@ -2,11 +2,11 @@ const { KeyError, ErrorHandler } = require('./errorHandler');
 //const { existsSync } = require('fs');
 
 const ERROR_MESSAGES = {
-  MISSING_PATH: (command) => `Missing path. ${command}`,
-  MISSING_NAME: (path) => `Missing name. ${path}`,
-  FILE_NOT_FOUND: (command) => `File not found for command: ${command}`,
-  MISSING_EXECUTE: (name) => `Command ${name} is missing execute function`,
-  LOAD_FAILED: (command) => `Failed to load command: ${command}`,
+  MISSING_PATH: (identificator) => `Missing path. ${identificator}`,
+  MISSING_NAME: (identificator) => `Missing name. ${identificator}`,
+  FILE_NOT_FOUND: (identificator) => `File not found for command: ${identificator}`,
+  MISSING_EXECUTE: (identificator) => `Command ${identificator} is missing execute function`,
+  LOAD_FAILED: (identificator) => `Failed to load command: ${identificator}`,
 };
 
 const ERROR_REPLIES = {
@@ -25,13 +25,16 @@ function generateErrorReply(key, identificator, cause) {
 }
 
 async function loadCommand(name, path) {
-  if (!name) return generateErrorReply('MISSING_NAME', path);
-  if (!path) return generateErrorReply('MISSING_PATH', name);
+  //if (!name) return generateErrorReply('MISSING_NAME', path);
+  //if (!path) return generateErrorReply('MISSING_PATH', name);
+  if (!name) throw new KeyError({ key: 'MISSING_NAME', identificator: path });
+  if (!path) throw new KeyError({ key: 'MISSING_PATH', identificator: name });
   
   try {
     //if (!existsSync(path)) return generateErrorReply('FILE_NOT_FOUND', name);
     const command = require(path);
-    if (!command?.execute) return generateErrorReply('MISSING_EXECUTE', name);
+    //if (!command?.execute) return generateErrorReply('MISSING_EXECUTE', name);
+    if (!command?.execute) throw new KeyError({ key: 'MISSING_EXECUTE', identificator: name });
     return [name, command];
   } catch (error) {
     return generateErrorReply('LOAD_FAILED', name, error);
