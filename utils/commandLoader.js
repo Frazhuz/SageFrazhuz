@@ -19,28 +19,19 @@ const ERROR_ENVIRONMENTS = {
   COMMAND: 'command'
 };
 
-function handleError(errorKey, path, customMessage) {
+function handleError(errorKey, name, path, error) {
   console.error(ERROR_MESSAGES[errorKey](path));
-  return {
-    execute: async (interaction) =>
-      await ErrorHandler.reply(
-        interaction,
-        ERROR_ENVIRONMENTS[errorKey],
-        customMessage ?? ERROR_REPLIES[errorKey]
-      )
-  };
+  if (error) console.error(error);
+  return [name, (interaction) => interaction.reply(ERROR_REPLIES[errorKey])];
 }
 
-export default async function loadCommand(path) {
-  if (!path) return handleError('MISSING_PATH');
+export default async function loadCommand(name, path) {
+  if (!path) return handleError('MISSING_PATH', name);
   try {
     const {default: command} = await import(path);
-    if (!command?.execute) return handleError('MISSING_EXECUTE', path);
-    return {
-      ...command,
-      execute: ErrorHandler.wrap(ERROR_ENVIRONMENTS.COMMAND, command.execute)
-    };
+    if (!command?.execute) return handleError('MISSING_EXECUTE', name, path);
+    return [name, command];
   } catch (error) {
-    return handleError('LOAD_FAILED', path, error.message);
+    return handleError('LOAD_FAILED', name, path, error);
   }
 }
