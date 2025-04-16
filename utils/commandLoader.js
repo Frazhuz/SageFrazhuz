@@ -1,12 +1,12 @@
-import ErrorHandler from './errorHandler.js';
+import { KeyError, ErrorHandler } from './errorHandler.js';
 import { existsSync } from 'fs';
 
 const ERROR_MESSAGES = {
-  MISSING_PATH: (name) => `Missing path. ${name}`,
+  MISSING_PATH: (command) => `Missing path. ${command}`,
   MISSING_NAME: (path) => `Missing name. ${path}`,
-  FILE_NOT_FOUND: (name, path) => `File not found for command ${name}`,
+  FILE_NOT_FOUND: (command) => `File not found for command: ${command}`,
   MISSING_EXECUTE: (name) => `Command ${name} is missing execute function`,
-  LOAD_FAILED: (name, error) => `Failed to load command ${name}:\n${error.stack || error}`,
+  LOAD_FAILED: (command) => `Failed to load command: ${command}`,
 };
 
 const ERROR_REPLIES = {
@@ -17,9 +17,11 @@ const ERROR_REPLIES = {
   LOAD_FAILED: '⚠️ This command is temporarily unavailable (LOAD FAILED)',
 };
 
-function generateErrorReply(errorKey, name, error) {
-  ErrorHandler.log(new Error(errorKey), ERROR_MESSAGES, name, error);
-  return [name, (interaction) => interaction.reply(ERROR_REPLIES[errorKey])];
+const log = ErrorHandler.log.bind(ErrorHandler, ERROR_MESSAGES);
+
+function generateErrorReply(key, identificator, cause) {
+  log({ key: key, identificator: identificator, cause: cause});
+  return [identificator, (interaction) => interaction.reply(ERROR_REPLIES[key])];
 }
 
 export default async function loadCommand(name, path) {
