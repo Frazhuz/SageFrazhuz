@@ -10,7 +10,7 @@ const ERROR_MESSAGES = {
 
 class KeyError extends Error {
   constructor({ name, message, reply, key, identificator, cause, interaction, ...messageArgs }) {
-    super(message);
+    super(message, { cause });
     this.interaction = interaction;
     this.name = name;
     this.reply = reply;
@@ -51,7 +51,7 @@ class ErrorHandler {
   
   static #constructBasicMessage(messages = {}, error) {     
     const message =
-      (error.message ?? messages[error.key]?.(...error.messageArgs)) +
+      (error.message ?? messages[error.key]?.(...error.messageArgs ?? '')) +
       (error.cause ? `\nCause: ${error.cause.message}` : '');
     return message;
   }
@@ -92,7 +92,7 @@ class ErrorHandler {
     console.error(`${error.name}: ${error.message}\n${error.stack}`);
   }
 
-  static #log = ErrorHandler.bind(ErrorHandler, ERROR_MESSAGES);
+  static #log = ErrorHandler.log.bind(ErrorHandler, ERROR_MESSAGES);
 
   static async reply(messages = {}, replies = {}, options) {
     if (!this.#validateOptions(options)) return;
