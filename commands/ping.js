@@ -1,7 +1,5 @@
-class ping {
+module.exports = {
     execute: async (interaction) => {
         await interaction.reply('Pong!');
     }
 };
-
-module.exports = ping;
