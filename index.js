@@ -1,5 +1,5 @@
 require('dotenv').config();
-import { Client, GatewayIntentBits } from 'discord.js';
+const { Client, GatewayIntentBits } = require('discord.js');
 import loadCommand from './utils/commandLoader.mjs';
 import { KeyError, ErrorHandler } from './utils/errorHandler.mjs';
 
