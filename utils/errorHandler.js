@@ -8,7 +8,7 @@ class KeyError extends Error {
     this.identificator = key;
     this.cause = cause;
     if (cause?.stack) this.stack = cause.stack;
-    this.messageArgs = messageArgs;
+    this.messageArgs = Object.values(messageArgs);
   }
 }
 
@@ -52,9 +52,8 @@ class ErrorHandler {
   static #constructBasicMessage(messages, error) {
     const key = error.key;
     const func = messages[key];
-    const args = Object.values(error.messageArgs);
     //Не ??, так как error.message по умолчанию ' '
-    const message = (error.message || func?.(...args)) + 
+    const message = (error.message || func?.(...error.messageArgs)) + 
       (error.cause ? `\nCause: ${error.cause.message}` : '');
     return message;
   }
