@@ -42,7 +42,6 @@ Promise.all([
   })
   .then(() => console.log('🔗 Connecting to Discord...'))
   .catch((cause) => {
-    console.log(ERROR_MESSAGES.FAILED_INITIALIZE());
     ErrorHandler.log(ERROR_MESSAGES, { key: 'FAILED_INITIALIZE', cause: cause });
     process.exit(1);
   });
