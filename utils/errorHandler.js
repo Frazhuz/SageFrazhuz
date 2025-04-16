@@ -1,13 +1,3 @@
-const DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
-const ERROR_MESSAGES = {
-  NO_INTERACTION: () => `No interaction was passed when attempting to log an error.`,
-  EXPIRED_INTERACTION: (primaryError) => `Interaction is expired. Attempt to reply user about error: "${primaryError}" failed.`,
-  EMPTY_ERROR: () => 'Attempt to send empty error',
-  NO_FUNCTION: (handler) => `${handler} isn't function`,
-  FAILED_REPLY: (primaryError) => `Attempt to reply user about error: "${primaryError}" failed.`
-};
-
-
 class KeyError extends Error {
   constructor({ name, message, reply, key, identificator, cause, interaction, ...messageArgs }) {
     super(message, { cause });
@@ -22,8 +12,17 @@ class KeyError extends Error {
 }
 
 
-
 class ErrorHandler {
+  ERROR_MESSAGES = {
+    NO_INTERACTION: () => `No interaction was passed when attempting to log an error.`,
+    EXPIRED_INTERACTION: (primaryError) => `Interaction is expired. Attempt to reply user about error: "${primaryError}" failed.`,
+    EMPTY_ERROR: () => 'Attempt to send empty error',
+    NO_FUNCTION: (handler) => `${handler} isn't function`,
+    FAILED_REPLY: (primaryError) => `Attempt to reply user about error: "${primaryError}" failed.`
+  };
+
+  DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
+  
   static #validateOptions(options) {
     if (!options) {
       this.#log({ key: 'EMPTY_ERROR' });
