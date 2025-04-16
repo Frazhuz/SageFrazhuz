@@ -50,7 +50,7 @@ class ErrorHandler {
   
   static #constructBasicMessage(messages = {}, error) {     
     const message =
-      (error.message ?? messages[error.key]?.(...error.messageArgs ?? '')) +
+      (error.message ?? messages.(error.key)?.(...error.messageArgs ?? '')) +
       (error.cause ? `\nCause: ${error.cause.message}` : '');
     return message;
   }
@@ -86,7 +86,10 @@ class ErrorHandler {
   
   
   static log(messages = {}, options) {
-    if (!this.#validateOptions(options)) return;
+    if (!options) {
+      console.error(ErrorHandler.ERROR_MESSAGES.EMPTY_ERROR);
+      return;
+    }
     const error = this.#constructError(messages, options);
     console.error(`${error.name}: ${error.message}\n${error.stack}`);
   }
