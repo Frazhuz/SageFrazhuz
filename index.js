@@ -1,6 +1,6 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
-const loadCommand = require('./utils/commandLoader.ja');
+const loadCommand = require('./utils/commandLoader.js');
 const { KeyError, ErrorHandler } = require('./utils/errorHandler.js');
 
 const ERROR_MESSAGES = {
