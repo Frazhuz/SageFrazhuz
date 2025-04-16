@@ -91,14 +91,14 @@ class ErrorHandler {
     console.error(`${error.name}: ${error.message}\n${error.stack}`);
   }
 
-  static #log = ErrorHandler.log.bind(ErrorHandler, ERROR_MESSAGES);
+  static #log = this.log.bind(this, this.ERROR_MESSAGES);
 
   static async reply(messages = {}, replies = {}, options) {
     if (!this.#validateOptions(options)) return;
     const error = this.#constructError(messages, options);
     if (!this.#validateInteraction(error)) return;
     this.#log(error);
-    error.reply ??= replies[error.key] ?? DEFAULT_ERROR_REPLY;
+    error.reply ??= replies[error.key] ?? this.DEFAULT_ERROR_REPLY;
     try {
       const interaction = error.interaction;
       if (!error.interaction.isRepliable()) {
