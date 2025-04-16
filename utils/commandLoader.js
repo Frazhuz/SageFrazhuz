@@ -27,18 +27,18 @@ function generateErrorReply(key, identificator, cause) {
 async function loadCommand(name, path) {
   //if (!name) return generateErrorReply('MISSING_NAME', path);
   //if (!path) return generateErrorReply('MISSING_PATH', name);
-  if (!name) throw new KeyError({ key: 'MISSING_NAME', identificator: path });
-  if (!path) throw new KeyError({ key: 'MISSING_PATH', identificator: name });
+  if (!name) throw new KeyError({ message: 'MISSING_NAME', identificator: path });
+  if (!path) throw new KeyError({ message: 'MISSING_PATH', identificator: name });
   
   try {
     //if (!existsSync(path)) return generateErrorReply('FILE_NOT_FOUND', name);
     const command = require(path);
     //if (!command?.execute) return generateErrorReply('MISSING_EXECUTE', name);
-    if (!command?.execute) throw new KeyError({ key: 'MISSING_EXECUTE', identificator: name });
+    if (!command?.execute) throw new KeyError({ message: 'MISSING_EXECUTE', identificator: name });
     return [name, command];
   } catch (cause) {
     //return generateErrorReply('LOAD_FAILED', name, error);
-    throw new KeyError({ key: 'LOAD_FAILED', identificator: name, cause: cause });
+    throw new KeyError({ message: 'LOAD_FAILED', identificator: name, cause: cause });
   }
 }
 
