@@ -52,9 +52,9 @@ class ErrorHandler {
   static #constructBasicMessage(messages, error) {
     const key = error.key;
     const func = messages[key];
-    console.log(error.message || func?.())
+    const args = error.messageArgs ?? {};
     //Не ??, так как error.message по умолчанию ' '
-    const message = (error.message || func?.()) + 
+    const message = (error.message || func?.(...args)) + 
       (error.cause ? `\nCause: ${error.cause.message}` : '');
     return message;
   }
