@@ -50,14 +50,14 @@ class ErrorHandler {
 
   
   static #constructBasicMessage(messages, error) {
-    console.log(messages.FAILED_INITIALIZE?.() + "jjj");
     const key = error.key;
-    console.log(key);
-    console.log(messages.key?.() + "jjjj");
     const func = messages.key;
     console.log(func?.() + "jjjjj");
+    console.log(func?.(...error.messageArgs) + "jjjjjj");
+    console.log(func?.(...error.messageArgs));
+    console.log(error.message || func?.(...error.messageArgs))
     //Не ??, так как error.message по умолчанию ' '
-    const message = (error.message || func?.(...error.messageArgs) || func?.() || func || key ) + 
+    const message = (error.message || func?.(...error.messageArgs)) + 
       (error.cause ? `\nCause: ${error.cause.message}` : '');
     return message;
   }
