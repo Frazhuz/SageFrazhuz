@@ -77,7 +77,9 @@ class ErrorHandler {
   }
 
   static #constructError(messages, options) {
+    console.log(`#constructError, options: ${options.message === ''}`);
     const error = (options.stack) ? options : new KeyError(options);
+    console.log(`#constructError, error: ${error.message === ''}`);
     error.message = error.interaction 
       ? this.#constructAdvancedMessage(messages, error) 
       : this.#constructBasicMessage(messages, error);
@@ -90,7 +92,9 @@ class ErrorHandler {
       console.error(ErrorHandler.ERROR_MESSAGES.EMPTY_ERROR);
       return;
     }
+    console.log(`Log, options: ${options.message === ''}`);
     const error = this.#constructError(messages, options);
+    console.log(`Log, error: ${error.message === ''}`);
     console.error(`${error.name}: ${error.message}\n`);
   }
 
