@@ -1,5 +1,5 @@
 class KeyError extends Error {
-  constructor({ name = 'KeyError', message = null, reply, key, identificator, cause, interaction, ...messageArgs } = {}) {
+  constructor({ name = 'KeyError', message, reply, key, identificator, cause, interaction, ...messageArgs } = {}) {
     super(message);
     this.interaction = interaction;
     this.name = name;
@@ -51,7 +51,8 @@ class ErrorHandler {
   
   static #constructBasicMessage(messages, error) {
     const key = error.key;
-    const message = (error.message ?? messages.key?.(...error.messageArgs)) + 
+    //Не ??, так как error.message по умолчанию ' '
+    const message = (error.message || messages.key?.(...error.messageArgs)) + 
       (error.cause ? `\nCause: ${error.cause.message}` : '');
     return message;
   }
