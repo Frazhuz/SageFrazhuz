@@ -1,12 +1,13 @@
 class KeyError extends Error {
   constructor({ name, message, reply, key, identificator, cause, interaction, ...messageArgs }) {
-    super(message, { cause });
+    super(message);
     this.interaction = interaction;
     this.name = name;
     this.reply = reply;
     this.key = key;
     this.identificator = key;
     this.cause = cause;
+    if(cause.stack) this.stack = cause.stack;
     this.messageArgs = Object.values(messageArgs);
   }
 }
