@@ -17,7 +17,7 @@ class KeyError extends Error {
     this.key = key;
     this.identificator = key;
     this.cause = cause;
-    this.messageArgs = ...messageArgs;
+    this.messageArgs = Object.values(messageArgs);
   }
 }
 
