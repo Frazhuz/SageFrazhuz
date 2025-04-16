@@ -8,7 +8,7 @@ const ERROR_MESSAGES = {
 };
 
 
-export class KeyError extends Error {
+class KeyError extends Error {
   constructor({ name, message, reply, key, identificator, cause, interaction, ...messageArgs }) {
     super(message);
     this.interaction = interaction;
@@ -23,7 +23,7 @@ export class KeyError extends Error {
 
 
 
-export class ErrorHandler {
+class ErrorHandler {
   static #validateOptions(options) {
     if (!options) {
       this.#log({ key: 'EMPTY_ERROR' });
@@ -129,3 +129,8 @@ export class ErrorHandler {
     };
   }
 }
+
+module.exports = {
+  KeyError,
+  ErrorHandler
+};
