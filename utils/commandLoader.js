@@ -1,5 +1,5 @@
-import { KeyError, ErrorHandler } from './errorHandler.js';
-import { existsSync } from 'fs';
+const { KeyError, ErrorHandler } = require('./errorHandler');
+//const { existsSync } = require('fs');
 
 const ERROR_MESSAGES = {
   MISSING_PATH: (command) => `Missing path. ${command}`,
@@ -20,20 +20,22 @@ const ERROR_REPLIES = {
 const log = ErrorHandler.log.bind(ErrorHandler, ERROR_MESSAGES);
 
 function generateErrorReply(key, identificator, cause) {
-  log({ key: key, identificator: identificator, cause: cause});
+  log({ key: key, identificator: identificator, cause: cause });
   return [identificator, (interaction) => interaction.reply(ERROR_REPLIES[key])];
 }
 
-export default async function loadCommand(name, path) {
+async function loadCommand(name, path) {
   if (!name) return generateErrorReply('MISSING_NAME', path);
   if (!path) return generateErrorReply('MISSING_PATH', name);
   
   try {
-    if (!existsSync(path)) return generateErrorReply('FILE_NOT_FOUND', name);
-    const {default: command} = await import(path);
+    //if (!existsSync(path)) return generateErrorReply('FILE_NOT_FOUND', name);
+    const command = require(path);
     if (!command?.execute) return generateErrorReply('MISSING_EXECUTE', name);
     return [name, command];
   } catch (error) {
     return generateErrorReply('LOAD_FAILED', name, error);
   }
 }
+
+module.exports = loadCommand;
