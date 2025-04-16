@@ -1,10 +1,10 @@
 const DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
 const ERROR_MESSAGES = {
   NO_INTERACTION: () => `No interaction was passed when attempting to log an error.`,
-  EXPIRED_INTERACTION: ({ primaryError }) => `Interaction is expired. Attempt to reply user about error: "${primaryError}" failed.`,
+  EXPIRED_INTERACTION: (primaryError) => `Interaction is expired. Attempt to reply user about error: "${primaryError}" failed.`,
   EMPTY_ERROR: () => 'Attempt to send empty error',
-  NO_FUNCTION: ({ handler }) => `${handler} isn't function`,
-  FAILED_REPLY: ({ primaryError }) => `Attempt to reply user about error: "${primaryError}" failed.`
+  NO_FUNCTION: (handler) => `${handler} isn't function`,
+  FAILED_REPLY: (primaryError) => `Attempt to reply user about error: "${primaryError}" failed.`
 };
 
 
@@ -17,7 +17,7 @@ export class KeyError extends Error {
     this.key = key;
     this.identificator = key;
     this.cause = cause;
-    this.messageArgs = messageArgs;
+    this.messageArgs = ...messageArgs;
   }
 }
 
