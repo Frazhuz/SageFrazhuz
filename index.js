@@ -10,19 +10,26 @@ const client = new Client({
   ]
 });
 
+if (!process.env.DISCORD_TOKEN) {
+  console.error('❌ Missing DISCORD_TOKEN in .env');
+  process.exit(1);
+}
+
 let commands = {};
+
 Promise.all([
-  loadCommand('./commands/ping.js'),
-  loadCommand('./commands/say.js'),
-  loadCommand('./commands/import/import.js')
+  loadCommand('ping', './commands/ping.js'),
+  loadCommand('say', './commands/say.js'),
+  loadCommand('import', './commands/import/import.js')
 ])
   .then(commandArray => {
-    commands = Object.fromEntries(
-      commandArray.map(command => [command.name, command])
-    );
+    commands = Object.fromEntries(commandArray); 
+    return client.login(process.env.DISCORD_TOKEN); 
   })
-  .catch(error => {
-  console.error('Failed to load commands:', error);
+  .then(() => console.log('🔗 Connecting to Discord...'))
+  .catch((error) => {
+    console.error('❌ Failed to load commands or login:', error);
+    process.exit(1);
   });
   
 process.on('unhandledRejection', (error) => {
@@ -31,12 +38,7 @@ process.on('unhandledRejection', (error) => {
 
 process.on('uncaughtException', (error) => {
   console.error('⚠️ Uncaught Exception:', error);
-});
-
-if (!process.env.DISCORD_TOKEN) {
-  console.error('❌ Missing DISCORD_TOKEN in .env');
-  process.exit(1);
-}
+})
 
 client.on('ready', () => {
   console.log(`🤖 Bot logged in as ${client.user.tag}`);
@@ -53,15 +55,8 @@ client.on('interactionCreate', async (interaction) => {
     '⚠️ This command does not exist.'
     );
 
-  await command.execute(interaction);
+  await ErrorHandler.wrap('interaction', command.execute)(interaction);
 });
-
-client.login(process.env.DISCORD_TOKEN)
-  .then(() => console.log('🔗 Connecting to Discord...'))
-  .catch((error) => {
-    console.error('❌ Login failed:', error);
-    process.exit(1);
-  });
 
 process.on('SIGINT', () => {
   console.log('\n🔴 Received SIGINT. Shutting down...');
