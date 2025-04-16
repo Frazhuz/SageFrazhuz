@@ -1,33 +1,40 @@
 const DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
 const ERROR_MESSAGES = {
-  NO_INTERACTION: (primaryError) => 
-    `No interaction was passed when attempting to log an error. Primary error: ${primaryError}`,
-  EXPIRED_INTERACTION: (primaryError) => 
-    `Interaction is expired. Attempt to reply user about error failed. Primary error: ${primaryError}`,
+  NO_INTERACTION: () => `No interaction was passed when attempting to log an error.`,
+  EXPIRED_INTERACTION: ({ primaryError }) => `Interaction is expired. Attempt to reply user about error: "${primaryError}" failed.`,
   EMPTY_ERROR: () => 'Attempt to send empty error',
-  NO_FUNCTION: (handler) => `${handler} isn't function`,
+  NO_FUNCTION: ({ handler }) => `${handler} isn't function`,
+  FAILED_REPLY: ({ primaryError }) => `Attempt to reply user about error: "${primaryError}" failed.`
 };
 
-export default class ErrorHandler {
-  static #validateError(error) {
-    if (!error) {
-      this.log(new Error('EMPTY_ERROR'), ERROR_MESSAGES);
+
+export class KeyError extends Error {
+  constructor({ name, message, reply, key, identificator, cause, interaction, ...messageArgs }) {
+    super(message);
+    this.interaction = interaction;
+    this.name = name;
+    this.reply = reply;
+    this.key = key;
+    this.identificator = key;
+    this.cause = cause;
+    this.messageArgs = messageArgs;
+  }
+}
+
+
+
+export class ErrorHandler {
+  static #validateOptions(options) {
+    if (!options) {
+      this.#log({ key: 'EMPTY_ERROR' });
       return false;
     }
     return true;
   }
 
-  static #validateInteraction(interaction, error) {
-    if (!interaction) {
-      this.log(new Error('NO_INTERACTION'), ERROR_MESSAGES, error);
-      return false;
-    }
-    return true;
-  }
-
-  static #validateRepliable(interaction, error) {
-    if (!interaction.isRepliable()) {
-      this.log(new Error('EXPIRED_INTERACTION'), ERROR_MESSAGES, error);
+  static #validateInteraction(error) {
+    if (!error.interaction) {
+      this.#log({ key: 'NO_INTERACTION', cause: error });
       return false;
     }
     return true;
@@ -35,14 +42,18 @@ export default class ErrorHandler {
 
   static #validateFunction(handler) {
     if (typeof handler !== 'function') {
-      this.log(new Error('NO_FUNCTION'), ERROR_MESSAGES, handler);
+      this.#log({ key: 'NO_FUNCTION', handler: handler });
       return false;
     }
     return true;
   }
+
   
-  static #getErrorMessage(error, errorMessages = {}, ...messageArgs) {
-    return errorMessages[error.message]?.(...messageArgs) ?? error.message ?? error;
+  static #constructBasicMessage(messages = {}, error) {     
+    const message =
+      (error.message ?? messages[error.key]?.(...error.messageArgs)) +
+      (error.cause ? `\nCause: ${error.cause.message}` : '');
+    return message;
   }
   
   static #getContext(interaction) {
@@ -53,59 +64,67 @@ export default class ErrorHandler {
       commandName: interaction.commandName ?? 'N/A',
     };
   }
-  
-  static log(error, errorMessages = {}, ...messageArgs) {
-    if (!this.#validateError(error)) return;
-    const errorMessage = this.#getErrorMessage(error, errorMessages, ...messageArgs);
-    const fullErrorMessage = 
-      errorMessage + 
-      (error.primary ? `Primary error: ${error.primary}:\n` : '') + 
-      (error.stack ? `\n${error.stack}` : '');
-    console.error(fullErrorMessage);
-  }
-  
-  static interactionLog(interaction, error, errorMessages = {}, ...messageArgs) {
-    if (!this.#validateError(error)) return;
-    if (!this.#validateInteraction(interaction, error)) return;
-    const context = this.#getContext(interaction);
-    const errorMessage = this.#getErrorMessage(error, errorMessages, ...messageArgs);
-    const fullErrorMessage = 
-      `ERROR: ${context.username} (${context.userId}) ` +
+
+  static #constructAdvancedMessage(messages = {}, error) {
+    const context = this.#getContext(error.interaction);
+    const blank = this.#constructBasicMessage(messages, error);
+    const message = 
+      `${context.username} (${context.userId}) ` +
       `on ${context.guildName} ` +
-      `during ${context.commandName}:\n${errorMessage}` +
-      (error.primary ? `Primary error: ${error.primary}:\n` : '') + 
-      (error.stack ? `\n${error.stack}` : '');
-    console.error(fullErrorMessage);
+      `during ${context.commandName}:` + 
+      `\n${blank}`;
+    return message;
   }
 
-  static async reply(interaction, error, errorMessages = {}, errorReplies = {}, ...messageArgs) {
-    if (!this.#validateError(error)) return;
-    if (!this.#validateInteraction(interaction, error)) return;
-    this.interactionLog(interaction, error, errorMessages, ...messageArgs);
-    const errorReply = errorReplies[error.message] ?? DEFAULT_ERROR_REPLY;
-    try {
-      if (!this.#validateRepliable(interaction, error)) return;
+  static #constructError(messages = {}, options) {
+    const error = (options.stack) ? options : new KeyError(options);
+    error.message = error.interaction 
+      ? this.#constructAdvancedMessage(messages, error) 
+      : this.#constructBasicMessage(messages, error);
+    error.identificator ??= error.message.split(' ').slice(0, 4).join(' ') + '...';
+    return error;
+  }
+  
+  
+  static log(messages = {}, options) {
+    if (!this.#validateOptions(options)) return;
+    const error = this.#constructError(messages, options);
+    console.error(`${error.name}: ${error.message}\n${error.stack}`);
+  }
 
-      if (interaction.replied) {
-        await interaction.followUp(errorReply);
-      } else if (interaction.deferred) {
-        await interaction.editReply(errorReply);
-      } else {
-        await interaction.reply(errorReply);
+  static #log = log.bind(this, ERROR_MESSAGES);
+
+  static async reply(messages = {}, replies = {}, options) {
+    if (!this.#validateOptions(options)) return;
+    const error = this.#constructError(messages, options);
+    if (!this.#validateInteraction(error)) return;
+    this.#log(error);
+    error.reply ??= replies[error.key] ?? DEFAULT_ERROR_REPLY;
+    try {
+      const interaction = error.interaction;
+      if (!error.interaction.isRepliable()) {
+        this.#log({ key: 'EXPIRED_INTERACTION', primaryError: error.identificator });
+        return;
       }
-    } catch (secondaryError) {
-      this.log(secondaryError);
+      if (interaction.replied) {
+        await interaction.followUp(error.reply);
+      } else if (interaction.deferred) {
+        await interaction.editReply(error.reply);
+      } else {
+        await interaction.reply(error.reply);
+      }
+    } catch (failedReply) {
+      this.log({ key: 'FAILED_REPLY', cause: failedReply, primaryError: error.identificator});
     }
   }
 
-  static wrap(handler, errorMessages = {}, errorReplies = {}) {
+  static wrap(messages = {}, replies = {}, handler) {
     if (!this.#validateFunction(handler)) return;
     return async (interaction) => {
       try {
         await handler(interaction);
       } catch (error) {
-        if (interaction) await ErrorHandler.reply(interaction, error, errorMessages, errorReplies);
-        else ErrorHandler.log(error, errorMessages);
+        this.reply(messages, replies, error);
       }
     };
   }
