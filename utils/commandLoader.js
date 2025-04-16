@@ -1,37 +1,37 @@
 import ErrorHandler from './errorHandler.js';
+import { existsSync } from 'fs';
 
 const ERROR_MESSAGES = {
-  MISSING_PATH: () => 'Command path is required',
-  MISSING_EXECUTE: (path) => `Command at ${path} is missing execute function`,
-  LOAD_FAILED: (path) => `Command load failed: ${path}`
+  MISSING_PATH: (name) => `Missing path. ${name}`,
+  MISSING_NAME: (path) => `Missing name. ${path}`,
+  FILE_NOT_FOUND: (name, path) => `File not found for command ${name}`,
+  MISSING_EXECUTE: (name) => `Command ${name} is missing execute function`,
+  LOAD_FAILED: (name, error) => `Failed to load command ${name}:\n${error.stack || error}`,
 };
 
 const ERROR_REPLIES = {
-  MISSING_PATH: '⚠️ This command is temporarily unavailable (missing path to command)',
-  MISSING_EXECUTE: '⚠️ This command is temporarily unavailable (missing execute function)',
-  LOAD_FAILED: '⚠️ This command is temporarily unavailable (load error)'
+  MISSING_PATH: '⚠️ This command is temporarily unavailable (MISSING PATH)',
+  MISSING_NAME: '⚠️ This command is temporarily unavailable (MISSING NAME)',
+  MISSING_EXECUTE: '⚠️ This command is temporarily unavailable (MISSING EXECUTE)',
+  FILE_NOT_FOUND: '⚠️ This command is temporarily unavailable (FILE_NOT_FOUND)',
+  LOAD_FAILED: '⚠️ This command is temporarily unavailable (LOAD FAILED)',
 };
 
-const ERROR_ENVIRONMENTS = {
-  MISSING_PATH: 'load error: missing path',
-  MISSING_EXECUTE: 'load error: missing execute function',
-  LOAD_FAILED: 'load error',
-  COMMAND: 'command'
-};
-
-function handleError(errorKey, name, path, error) {
-  console.error(ERROR_MESSAGES[errorKey](path));
-  if (error) console.error(error);
+function generateErrorReply(errorKey, name, error) {
+  ErrorHandler.log(new Error(errorKey), ERROR_MESSAGES, name, error);
   return [name, (interaction) => interaction.reply(ERROR_REPLIES[errorKey])];
 }
 
 export default async function loadCommand(name, path) {
-  if (!path) return handleError('MISSING_PATH', name);
+  if (!name) return generateErrorReply('MISSING_NAME', path);
+  if (!path) return generateErrorReply('MISSING_PATH', name);
+  
   try {
+    if (!existsSync(path)) return generateErrorReply('FILE_NOT_FOUND', name);
     const {default: command} = await import(path);
-    if (!command?.execute) return handleError('MISSING_EXECUTE', name, path);
+    if (!command?.execute) return generateErrorReply('MISSING_EXECUTE', name);
     return [name, command];
   } catch (error) {
-    return handleError('LOAD_FAILED', name, path, error);
+    return generateErrorReply('LOAD_FAILED', name, error);
   }
 }
