@@ -20,25 +20,21 @@ const ERROR_REPLIES = {
 const log = ErrorHandler.log.bind(ErrorHandler, ERROR_MESSAGES);
 
 function generateErrorReply(key, identificator, cause) {
-  log({ key: key, identificator: identificator, cause: cause });
+  log({ key: key, other: identificator, cause: cause });
   return [identificator, (interaction) => interaction.reply(ERROR_REPLIES[key])];
 }
 
 async function loadCommand(name, path) {
-  //if (!name) return generateErrorReply('MISSING_NAME', path);
-  //if (!path) return generateErrorReply('MISSING_PATH', name);
-  if (!name) throw new KeyError({ message: 'MISSING_NAME', identificator: path });
-  if (!path) throw new KeyError({ message: 'MISSING_PATH', identificator: name });
+  if (!name) return generateErrorReply('MISSING_NAME', path);
+  if (!path) return generateErrorReply('MISSING_PATH', name);
   
   try {
     //if (!existsSync(path)) return generateErrorReply('FILE_NOT_FOUND', name);
     const command = require(path);
-    //if (!command?.execute) return generateErrorReply('MISSING_EXECUTE', name);
-    if (!command?.execute) throw new KeyError({ message: 'MISSING_EXECUTE', identificator: name });
+    if (!command?.execute) return generateErrorReply('MISSING_EXECUTE', name);
     return [name, command];
   } catch (error) {
     return generateErrorReply('LOAD_FAILED', name, error);
-    //throw new KeyError({ message: 'LOAD_FAILED', identificator: name, cause: cause });
   }
 }
 
