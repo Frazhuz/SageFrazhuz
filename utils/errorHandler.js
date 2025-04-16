@@ -1,5 +1,5 @@
 class KeyError extends Error {
-  constructor({ name, message, reply, key, identificator, cause, interaction, ...messageArgs }) {
+  constructor({ name = 'KeyError', message, reply, key, identificator, cause, interaction, ...messageArgs }) {
     super(message);
     this.interaction = interaction;
     this.name = name;
@@ -8,7 +8,7 @@ class KeyError extends Error {
     this.identificator = key;
     this.cause = cause;
     if(cause.stack) this.stack = cause.stack;
-    this.messageArgs = Object.values(messageArgs);
+    this.messageArgs = messageArgs;
   }
 }
 
@@ -49,9 +49,9 @@ class ErrorHandler {
   }
 
   
-  static #constructBasicMessage(messages = {}, error) {
+  static #constructBasicMessage(messages, error) {
     const key = error.key;
-    const message = (error.message ?? messages.key?.(...error.messageArgs)) +
+    const message = (error.message ?? messages.key?.()) +
       (error.cause ? `\nCause: ${error.cause.message}` : '');
     return message;
   }
@@ -65,7 +65,7 @@ class ErrorHandler {
     };
   }
 
-  static #constructAdvancedMessage(messages = {}, error) {
+  static #constructAdvancedMessage(messages, error) {
     const context = this.#getContext(error.interaction);
     const blank = this.#constructBasicMessage(messages, error);
     const message = 
@@ -76,7 +76,7 @@ class ErrorHandler {
     return message;
   }
 
-  static #constructError(messages = {}, options) {
+  static #constructError(messages, options) {
     const error = (options.stack) ? options : new KeyError(options);
     error.message = error.interaction 
       ? this.#constructAdvancedMessage(messages, error) 
@@ -86,7 +86,7 @@ class ErrorHandler {
   }
   
   
-  static log(messages = {}, options) {
+  static log(messages, options) {
     if (!options) {
       console.error(ErrorHandler.ERROR_MESSAGES.EMPTY_ERROR);
       return;
