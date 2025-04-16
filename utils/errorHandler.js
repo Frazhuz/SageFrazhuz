@@ -92,7 +92,7 @@ class ErrorHandler {
     console.error(`${error.name}: ${error.message}\n${error.stack}`);
   }
 
-  static #log = log.bind(this, ERROR_MESSAGES);
+  static #log = ErrorHandler.bind(ErrorHandler, ERROR_MESSAGES);
 
   static async reply(messages = {}, replies = {}, options) {
     if (!this.#validateOptions(options)) return;
