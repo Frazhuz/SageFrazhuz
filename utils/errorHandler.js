@@ -92,7 +92,7 @@ class ErrorHandler {
       console.error(ErrorHandler.ERROR_MESSAGES.EMPTY_ERROR);
       return;
     }
-    console.log(messages.FAILED_INITIALIZE?.());
+    console.log(messages.FAILED_INITIALIZE?.() + "jjjjj");
     const error = this.#constructError(messages, options);
     console.error(`${error.name}: ${error.message}\n`);
   }
