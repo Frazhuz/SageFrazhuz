@@ -48,7 +48,7 @@ client.on('ready', () => {
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   const command = commands[interaction.commandName];
-  if (!command) return ErrorHandler.handleInteractionError(
+  if (!command) return await ErrorHandler.handleInteractionError(
     interaction,
     'interaction',
     `Attempted to call unknown command: ${interaction.commandName}`,
