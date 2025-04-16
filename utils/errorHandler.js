@@ -53,7 +53,7 @@ class ErrorHandler {
     const key = error.key;
     const func = messages.key;
     //Не ??, так как error.message по умолчанию ' '
-    const message = (error.message || func?.(...error.messageArgs) || func?.() || func ) + 
+    const message = (error.message || func?.(...error.messageArgs) || func?.() || func || key ) + 
       (error.cause ? `\nCause: ${error.cause.message}` : '');
     return message;
   }
