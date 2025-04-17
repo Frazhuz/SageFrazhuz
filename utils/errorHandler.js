@@ -1,5 +1,5 @@
 class KeyError extends Error {
-  constructor({ name = 'KeyError', message, reply, key, identificator, cause, interaction, ...messageArgs } = {}) {
+  constructor({ name = 'KeyError', message, reply, key, cause, interaction, ...messageArgs } = {}) {
     super(message, {cause});
     this.interaction = interaction;
     this.name = name;
@@ -7,7 +7,12 @@ class KeyError extends Error {
     this.key = key;
     this.identificator = key;
     this.messageArgs = Object.values(messageArgs);
-    if (cause) this.message += `\nCause: ${cause.message}`;
+    if (!cause) {
+      this.nestingNumber = 0;
+    } else {
+      this.nestingNumber = (cause.nestingNumber ?? 0) + 1;
+      this.message += `\nCause ${this.nestingNumber}: ${cause.message}`;
+    }
   }
 }
 
