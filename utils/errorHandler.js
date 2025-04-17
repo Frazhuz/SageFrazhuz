@@ -54,6 +54,7 @@ class ErrorHandler {
     const key = options.key;
     const func = messages[key];
     const args = Object.values(options.messageArgs ?? {});
+    const cause = options.options.cause;
     //Важно использовать именно ||, так как option.message может быть ' '
     let message = (options.message || func?.(...args));
     if (cause) message += `\nCause ${options.nestingNumber}: ${cause.message}`;
