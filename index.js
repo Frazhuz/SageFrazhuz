@@ -15,15 +15,17 @@ const ERROR_REPLIES = {
   UNKNOWN_COMMAND: '⚠️ This command does not exist.'
 };
 
-const log = ErrorHandler.log.bind(ErrorHandler, ERROR_MESSAGES);
-const reply = ErrorHandler.reply.bind(ErrorHandler, ERROR_MESSAGES, ERROR_REPLIES);
-
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages
   ]
 });
+
+let indexErrorHandler = new ErrorHandler(ERROR_MESSAGES, client, ERROR_REPLIES)
+const log = indexErrorHandler.log.bind(indexErrorHandler);
+const reply = indexErrorHandler.reply.bind(indexErrorHandler);
+
 
 if (!process.env.DISCORD_TOKEN) log({ key: 'NO_DISCORD_TOKEN' });
 
@@ -56,14 +58,25 @@ process.on(
 client.on('ready', () => console.log(`🤖 Bot logged in as ${client.user.tag}`));
 
 client.on('interactionCreate', async (interaction) => {
+  indexErrorHandler.interaction = interaction;
   if (!interaction.isChatInputCommand()) return;
   const command = commands[interaction.commandName];
   if (!command) {
-    await reply({key: 'UNKNOWN_COMMAND', interaction: interaction, messageArgs: interaction.commandName});
+    await reply({key: 'UNKNOWN_COMMAND', messageArgs: interaction.commandName});
     return;
   }
 
-  await ErrorHandler.wrap(command.ERROR_MESSAGES, command.ERROR_REPLIES, command.execute)(interaction);
+  const commandErrorHandler = new ErrorHandler(
+    command.ERROR_MESSAGES, 
+    client
+    command.ERROR_REPLIES,
+    interaction
+    );
+  try {
+    command.execute(interaction);
+  } catch(error) {
+    commandErrorHandler.reply(error)
+  };
 });
 
 process.on('SIGINT', () => {
