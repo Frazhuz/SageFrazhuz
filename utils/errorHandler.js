@@ -60,8 +60,8 @@ class ErrorHandler {
     const func = messages[key];
     const args = Object.values(options.messageArgs ?? {});
     //Важно использовать именно ||, так как option.message может быть ' '
-    let message = (options.message || func?.(...args));
-    console.log('#constructBasicMessage' + message)
+    let message = (func?.(...args) ?? '') + options.message;
+    console.log(options.name + '#constructBasicMessage' + message)
     return message;
   }
   
