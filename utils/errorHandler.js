@@ -37,18 +37,18 @@ class ErrorHandler {
 
   static #DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
 
-  static #_insideLog;
+  static #_internalLog;
 
-  static get #insideLog() {
-    if(!this.#_insideLog) {
-      this.#_insideLog = new ErrorHandler(this.#ERROR_MESSAGES).log;
+  static get #internalLog() {
+    if(!this.#_internalLog) {
+      this.#_internalLog = new ErrorHandler(this.#ERROR_MESSAGES).log;
     }
     return this.#_insideLog;
   }
   
   #validateOptions(options) {
     if (!options) {
-      ErrorHandler.#insideLog({ key: 'EMPTY_ERROR' });
+      ErrorHandler.#internalLog({ key: 'EMPTY_ERROR' });
       return false;
     }
     return true;
@@ -56,7 +56,7 @@ class ErrorHandler {
 
   #validateInteraction(error) {
     if (!this.interaction) {
-      ErrorHandler.#insideLog({ key: 'NO_INTERACTION', cause: error });
+      ErrorHandler.#internalLog({ key: 'NO_INTERACTION', cause: error });
       return false;
     }
     return true;
@@ -64,7 +64,7 @@ class ErrorHandler {
 
   #validateFunction(handler) {
     if (typeof handler !== 'function') {
-      ErrorHandler.#insideLog({ key: 'NO_FUNCTION', messageArgs: handler });
+      ErrorHandler.#internalLog({ key: 'NO_FUNCTION', messageArgs: handler });
       return false;
     }
     return true;
@@ -121,7 +121,7 @@ class ErrorHandler {
     error.reply ??= this.replies[error.key] ?? ErrorHandler.#DEFAULT_ERROR_REPLY;
     try {
       if (!this.interaction.isRepliable()) {
-        ErrorHandler.#log({ key: 'EXPIRED_INTERACTION', messageArgs: error.identificator });
+        ErrorHandler.#internalLog({ key: 'EXPIRED_INTERACTION', messageArgs: error.identificator });
         return;
       }
       if (this.interaction.replied) {
@@ -132,7 +132,7 @@ class ErrorHandler {
         await this.interaction.reply(error.reply);
       }
     } catch (failedReply) {
-      ErrorHandler.#log({ key: 'FAILED_REPLY', cause: failedReply, messageArgs: error.identificator });
+      ErrorHandler.#internalLog({ key: 'FAILED_REPLY', cause: failedReply, messageArgs: error.identificator });
     }
   }
 }
