@@ -101,7 +101,7 @@ class ErrorHandler {
     if (!this.#validateOptions(options)) return;
     const error = this.#constructError(messages, options);
     if (!this.#validateInteraction(error)) return;
-    this.#log(error);
+    //this.#log(error);
     error.reply ??= replies[error.key] ?? this.DEFAULT_ERROR_REPLY;
     try {
       const interaction = error.interaction;
