@@ -39,7 +39,7 @@ Promise.all([
   })
   .then(() => console.log('🔗 Connecting to Discord...'))
   .catch((cause) => {
-    log(new KeyError ({ key: 'FAILED_INITIALIZE', cause: cause }));
+    log({ key: 'FAILED_INITIALIZE', cause: cause });
   });
   
 process.on(
