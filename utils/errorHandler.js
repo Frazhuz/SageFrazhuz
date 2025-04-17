@@ -1,5 +1,5 @@
 class KeyError extends Error {
-  constructor({ message = '', reply, key, cause, interaction, ...messageArgs } = {}) {
+  constructor({ message = '', reply, key, cause, interaction, messageArgs } = {}) {
     let nestingNumber; 
     if (cause) {
       nestingNumber = (cause.nestingNumber ?? 1) + 1;
@@ -12,7 +12,7 @@ class KeyError extends Error {
     this.identificator = key ?? (message.split(' ').slice(0, 3).join(' ') + '...');
     this.reply = reply;
     this.key = key;
-    this.messageArgs = Object.values(messageArgs);
+    this.messageArgs = messageArgs;
     this.nestingNumber = nestingNumber;
     //Error.captureStackTrace(this, ErrorHandler.log);
   }
@@ -55,9 +55,9 @@ class ErrorHandler {
   }
 
   
-  static #constructBasicMessage(messages, {message, key, ...messageArgs } ) {
+  static #constructBasicMessage(messages, { message, key, messageArgs } ) {
     const func = messages[key];
-    return (func?.(...messageArgs) ?? '') + message;
+    return (func?.(messageArgs) ?? '') + message;
   }
   
   static #getContext(interaction) {
