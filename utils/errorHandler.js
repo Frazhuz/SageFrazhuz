@@ -37,6 +37,8 @@ class ErrorHandler {
 
   static #DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
 
+  static #_insideLog;
+
   static get #insideLog() {
     if(!this.#_insideLog) {
       this.#_insideLog = new ErrorHandler(this.#ERROR_MESSAGES).log;
