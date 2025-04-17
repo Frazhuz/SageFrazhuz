@@ -68,7 +68,7 @@ client.on('interactionCreate', async (interaction) => {
 
   const commandErrorHandler = new ErrorHandler(
     command.ERROR_MESSAGES, 
-    client
+    client,
     command.ERROR_REPLIES,
     interaction
     );
