@@ -23,7 +23,7 @@ const log = commandErrorHandler.log.bind(commandErrorHandler);
 function generateErrorReply(key, identificator, cause) {
   //throw new KeyError({message: ERROR_MESSAGES[key](identificator), cause: cause});
   log({ key: key, cause: cause, messageArgs: identificator });
-  return [identificator, (interaction) => interaction.reply(ERROR_REPLIES[key])];
+  return [identificator, { execute: (interaction) => interaction.reply(ERROR_REPLIES[key]) }];
 }
 
 async function loadCommand(name, path) {
