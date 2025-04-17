@@ -43,7 +43,7 @@ class ErrorHandler {
     if(!this.#_internalLog) {
       this.#_internalLog = new ErrorHandler(this.#ERROR_MESSAGES).log;
     }
-    return this.#_insideLog;
+    return this.#_internalLog;
   }
   
   #validateOptions(options) {
