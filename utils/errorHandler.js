@@ -14,6 +14,7 @@ class KeyError extends Error {
       this.nestingNumber = (cause.nestingNumber ?? 0) + 1;
       this.message += `\nCause ${this.nestingNumber}: ${cause.message}`;
     }
+    Error.captureStackTrace(this, this.constructor)
   }
 }
 
