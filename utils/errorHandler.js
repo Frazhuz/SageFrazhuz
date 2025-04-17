@@ -86,12 +86,9 @@ class ErrorHandler {
   
   
   static log(messages = {}, options) {
-    if (!options) {
-      console.error(ErrorHandler.ERROR_MESSAGES.EMPTY_ERROR);
-      return;
-    }
+    if (!this.#validateOptions(options)) return;
     const error = this.#constructError(messages, options);
-    console.error(error.stack + '\n');
+    console.error(error + '\n');
   }
 
   static #log = this.log.bind(this, this.ERROR_MESSAGES);
