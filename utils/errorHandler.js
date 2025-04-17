@@ -55,7 +55,7 @@ class ErrorHandler {
   }
 
   #validateInteraction(error) {
-    if (!error.interaction) {
+    if (!this.interaction) {
       ErrorHandler.#insideLog({ key: 'NO_INTERACTION', cause: error });
       return false;
     }
