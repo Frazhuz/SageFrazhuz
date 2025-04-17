@@ -16,7 +16,7 @@ const ERROR_REPLIES = {
 };
 
 const log = ErrorHandler.log.bind(ErrorHandler, ERROR_MESSAGES);
-const reply = ErrorHandler.reply.bind(ErrorHandler, ERROR_REPLIES);
+const reply = ErrorHandler.reply.bind(ErrorHandler, ERROR_MESSAGES, ERROR_REPLIES);
 
 const client = new Client({
   intents: [
