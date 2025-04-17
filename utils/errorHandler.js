@@ -1,5 +1,6 @@
 class KeyError extends Error {
   constructor({ message, reply, key, cause, interaction, ...messageArgs } = {}) {
+    if (cause) message += `\nCause ${cause.nestingNumber}: ${cause.message}`;
     super(message, { cause });
     this.options = { cause: cause };
     this.interaction = interaction;
@@ -57,7 +58,6 @@ class ErrorHandler {
     const cause = options.options.cause;
     //Важно использовать именно ||, так как option.message может быть ' '
     let message = (options.message || func?.(...args));
-    if (cause) message += `\nCause ${options.nestingNumber}: ${cause.message}`;
     return message;
   }
   
