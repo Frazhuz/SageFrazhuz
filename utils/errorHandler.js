@@ -1,11 +1,11 @@
 class KeyError extends Error {
-  constructor({ name = 'KeyError', message, reply, key, cause, interaction, ...messageArgs } = {}) {
+  constructor({ message, reply, key, cause, interaction, ...messageArgs } = {}) {
     super(message, {cause});
     this.interaction = interaction;
-    this.name = name;
+    this.name = key ?? 'KeyError';
+    this.identificator = key ?? (message.split(' ').slice(0, 3).join(' ') + '...');
     this.reply = reply;
     this.key = key;
-    this.identificator = key;
     this.messageArgs = Object.values(messageArgs);
     if (!cause) {
       this.nestingNumber = 0;
@@ -56,7 +56,6 @@ class ErrorHandler {
   static #constructBasicMessage(messages, error) {
     const key = error.key;
     const func = messages[key];
-    //Не ??, так как error.message по умолчанию ' '
     const message = (func?.(...error.messageArgs) ?? '') + error.message;
     return message;
   }
@@ -118,7 +117,7 @@ class ErrorHandler {
         await interaction.reply(error.reply);
       }
     } catch (failedReply) {
-      this.log({ key: 'FAILED_REPLY', cause: failedReply, primaryError: error.identificator});
+      this.log({ key: 'FAILED_REPLY', cause: failedReply, primaryError: error.identificator });
     }
   }
 
