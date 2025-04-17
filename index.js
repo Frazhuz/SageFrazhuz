@@ -59,7 +59,7 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   const command = commands[interaction.commandName];
   if (!command) {
-    await reply({key: 'UNKNOWN_COMMAND', interaction: interaction, commandName: interaction.commandName});
+    await reply({key: 'UNKNOWN_COMMAND', interaction: interaction, messageArgs: interaction.commandName});
     return;
   }
 
