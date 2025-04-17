@@ -99,7 +99,7 @@ class ErrorHandler {
 
   #constructError(options) {
     options.message = this.#constructFullMessage(options);
-    return options.stack ? options : new KeyError(options);
+    return (options.stack ? options : new KeyError(options));
   }
 
   #log(error) {
