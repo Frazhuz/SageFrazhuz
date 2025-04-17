@@ -1,6 +1,7 @@
 class KeyError extends Error {
   constructor({ message, reply, key, cause, interaction, ...messageArgs } = {}) {
-    if (cause) message += `\nCause ${cause.nestingNumber}: ${cause.message}`;
+    if (cause) message += `\nCause ${cause.nestingNumber ?? 1}: ${cause.message}`;
+    Error.stackTraceLimit = 0;
     super(message, { cause });
     this.options = { cause: cause };
     this.interaction = interaction;
@@ -9,8 +10,9 @@ class KeyError extends Error {
     this.reply = reply;
     this.key = key;
     this.messageArgs = messageArgs;
-    Error.captureStackTrace(this, ErrorHandler.log);
     this.nestingNumber = cause ? ((cause.nestingNumber ?? 0) + 1) : 0;
+    Error.stackTraceLimit = 10;
+    Error.captureStackTrace(this, ErrorHandler.log);
   }
 }
 
