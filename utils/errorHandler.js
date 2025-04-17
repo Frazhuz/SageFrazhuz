@@ -7,7 +7,7 @@ class KeyError extends Error {
     this.identificator = key ?? (message.split(' ').slice(0, 3).join(' ') + '...');
     this.reply = reply;
     this.key = key;
-    this.messageArgs = Object.values(messageArgs);
+    this.messageArgs = messageArgs;
     Error.captureStackTrace(this, ErrorHandler.log);
     this.nestingNumber = cause ? ((cause.nestingNumber ?? 0) + 1) : 0;
   }
@@ -53,8 +53,9 @@ class ErrorHandler {
   static #constructBasicMessage(messages, options) {
     const key = options.key;
     const func = messages[key];
+    const args = Object.values(options.messageArgs ?? {});
     //Важно использовать именно ||, так как option.message может быть ' '
-    let message = (options.message || func?.(...options.messageArgs));
+    let message = (options.message || func?.(...args));
     if (cause) message += `\nCause ${options.nestingNumber}: ${cause.message}`;
     return message;
   }
