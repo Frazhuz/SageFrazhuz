@@ -17,7 +17,7 @@ const ERROR_REPLIES = {
   LOAD_FAILED: '⚠️ This command is temporarily unavailable (LOAD FAILED)',
 };
 
-const log = ErrorHandler.log.bind(ErrorHandler, ERROR_MESSAGES);
+const log = ErrorHandler.log.bind(new ErrorHandler(ERROR_MESSAGES));
 
 function generateErrorReply(key, identificator, cause) {
   //throw new KeyError({message: ERROR_MESSAGES[key](identificator), cause: cause});
