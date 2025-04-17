@@ -1,7 +1,7 @@
 class KeyError extends Error {
   constructor({ message, reply, key, cause, interaction, ...messageArgs } = {}) {
-    super(message, {cause});
-    this.options.cause = cause;
+    super(message, { cause });
+    this.options = { cause: cause };
     this.interaction = interaction;
     this.name = key ?? 'KeyError';
     this.identificator = key ?? (message.split(' ').slice(0, 3).join(' ') + '...');
