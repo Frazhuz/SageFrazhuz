@@ -57,6 +57,8 @@ class ErrorHandler {
   
   static #constructBasicMessage(messages, { message, key, messageArgs } ) {
     const func = messages[key];
+    console.log(func)
+    console.log(messageArgs)
     return (func?.(messageArgs) ?? '') + message;
   }
   
