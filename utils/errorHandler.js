@@ -48,14 +48,14 @@ class ErrorHandler {
 
   static #validateFunction(handler) {
     if (typeof handler !== 'function') {
-      this.#log({ key: 'NO_FUNCTION', handler: handler });
+      this.#log({ key: 'NO_FUNCTION', messageArgs: handler });
       return false;
     }
     return true;
   }
 
   
-  static #constructBasicMessage(messages, { message, key, messageArgs } ) {
+  static #constructBasicMessage(messages, { message = '', key, messageArgs } ) {
     const func = messages[key];
     console.log(func)
     console.log(messageArgs)
@@ -108,7 +108,7 @@ class ErrorHandler {
     try {
       const interaction = error.interaction;
       if (!error.interaction.isRepliable()) {
-        this.#log({ key: 'EXPIRED_INTERACTION', primaryError: error.identificator });
+        this.#log({ key: 'EXPIRED_INTERACTION', messageArgs: error.identificator });
         return;
       }
       if (interaction.replied) {
@@ -119,7 +119,7 @@ class ErrorHandler {
         await interaction.reply(error.reply);
       }
     } catch (failedReply) {
-      this.log({ key: 'FAILED_REPLY', cause: failedReply, primaryError: error.identificator });
+      this.log({ key: 'FAILED_REPLY', cause: failedReply, messageArgs: error.identificator });
     }
   }
 
