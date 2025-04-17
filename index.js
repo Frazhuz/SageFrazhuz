@@ -31,7 +31,7 @@ let commands = {};
 Promise.all([
   loadCommand('ping', '../commands/ping.js'),
   loadCommand('say', '../commands/say.js'),
-  loadCommand('import', './commands/import/import.js')
+  loadCommand('import', '../commands/import/import.js')
 ])
   .then(commandArray => {
     commands = Object.fromEntries(commandArray); 
