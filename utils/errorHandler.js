@@ -8,13 +8,8 @@ class KeyError extends Error {
     this.reply = reply;
     this.key = key;
     this.messageArgs = Object.values(messageArgs);
-    if (!cause) {
-      this.nestingNumber = 0;
-    } else {
-      this.nestingNumber = (cause.nestingNumber ?? 0) + 1;
-      this.message += `\nCause ${this.nestingNumber}: ${cause.message}`;
-    }
-    Error.captureStackTrace(this, this.constructor)
+    Error.captureStackTrace(this, ErrorHandler.log);
+    this.nestingNumber = cause ? ((cause.nestingNumber ?? 0) + 1) : 0;
   }
 }
 
@@ -55,16 +50,12 @@ class ErrorHandler {
   }
 
   
-  static #constructBasicMessage(messages, error) {
-    const key = error.key;
+  static #constructBasicMessage(messages, options) {
+    const key = options.key;
     const func = messages[key];
-    console.log(`constructBasicMessage: ${messages}`);
-    console.log(`${error.name}: ${key}`);
-    console.log(`${error.name}: ${func}`);
-    console.log(`${error.name}: ${error.messageArgs}`);
-    console.log(`${error.name}: ${func?.(...error.messageArgs)}`);
-    const message = (func?.(...error.messageArgs) ?? '') + error.message;
-    console.log(`${error.name}: ${message}`);
+    //Важно использовать именно ||, так как option.message может быть ' '
+    let message = (option.message || func?.(...option.messageArgs));
+    if (cause) message += `\nCause ${options.nestingNumber}: ${cause.message}`;
     return message;
   }
   
@@ -77,9 +68,9 @@ class ErrorHandler {
     };
   }
 
-  static #constructAdvancedMessage(messages, error) {
-    const context = this.#getContext(error.interaction);
-    const blank = this.#constructBasicMessage(messages, error);
+  static #constructAdvancedMessage(messages, options) {
+    const context = this.#getContext(options.interaction);
+    const blank = this.#constructBasicMessage(messages, options);
     const message = 
       `${context.username} (${context.userId}) ` +
       `on ${context.guildName} ` +
@@ -89,20 +80,16 @@ class ErrorHandler {
   }
 
   static #constructError(messages, options) {
-    let error = (options.stack) ? options : new KeyError(options);
-    error.message = error.interaction 
-      ? this.#constructAdvancedMessage(messages, error) 
-      : this.#constructBasicMessage(messages, error);
-    console.log(`#constructError ${error.name}: ${error.message}`);
-    return error;
+    options.message = options.interaction 
+      ? this.#constructAdvancedMessage(messages, options) 
+      : this.#constructBasicMessage(messages, options);
+    return options;
   }
   
   
   static log(messages = {}, options) {
     if (!this.#validateOptions(options)) return;
-    const error = this.#constructError(messages, options);
-    console.log(`#log message ${error.name}: ${error.message}`);
-    console.log(`#log stack ${error.name}: ${error.stack}`);
+    const error = new KeyError(this.#constructError(messages, options));
     console.error(error.stack + '\n');
   }
 
