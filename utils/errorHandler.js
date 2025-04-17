@@ -72,7 +72,7 @@ class ErrorHandler {
     const message = 
       `${context.username} (${context.userId}) ` +
       `on ${context.guildName} ` +
-      `during ${context.commandName}:` + 
+      `during ${context.commandName} =>` + 
       `\n${blank}`;
     return message;
   }
