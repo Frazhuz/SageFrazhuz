@@ -20,8 +20,8 @@ const ERROR_REPLIES = {
 const log = ErrorHandler.log.bind(ErrorHandler, ERROR_MESSAGES);
 
 function generateErrorReply(key, identificator, cause) {
-  throw new KeyError({message: ERROR_MESSAGES[key](identificator), cause: cause});
-  //log({ key: key, other: identificator, cause: cause });
+  //throw new KeyError({message: ERROR_MESSAGES[key](identificator), cause: cause});
+  log({ key: key, other: identificator, cause: cause });
   return [identificator, (interaction) => interaction.reply(ERROR_REPLIES[key])];
 }
 
