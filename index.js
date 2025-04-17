@@ -25,7 +25,7 @@ const client = new Client({
   ]
 });
 
-if (process.env.DISCORD_TOKEN) log({ key: 'NO_DISCORD_TOKEN' });
+if (!process.env.DISCORD_TOKEN) log({ key: 'NO_DISCORD_TOKEN' });
 
 let commands = {};
 Promise.all([
