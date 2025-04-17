@@ -12,7 +12,7 @@ class KeyError extends Error {
     this.identificator = key ?? (message.split(' ').slice(0, 3).join(' ') + '...');
     this.reply = reply;
     this.key = key;
-    this.messageArgs = messageArgs;
+    this.messageArgs = Object.values(messageArgs);
     this.nestingNumber = nestingNumber;
     //Error.captureStackTrace(this, ErrorHandler.log);
   }
@@ -55,10 +55,9 @@ class ErrorHandler {
   }
 
   
-  static #constructBasicMessage(messages, {message, key, messageArgs = {} } ) {
+  static #constructBasicMessage(messages, {message, key, messageArgs = [] } ) {
     const func = messages[key];
-    const args = Object.values(messageArgs);
-    return (func?.(...args) ?? '') + message;
+    return (func?.(...messageArgs) ?? '') + message;
   }
   
   static #getContext(interaction) {
