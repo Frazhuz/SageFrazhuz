@@ -7,6 +7,7 @@ class KeyError extends Error {
     this.key = key;
     this.identificator = key;
     this.messageArgs = Object.values(messageArgs);
+    this.message = message + (error.cause ? `\nCause: ${error.cause.message}` : '');
   }
 }
 
@@ -51,8 +52,7 @@ class ErrorHandler {
     const key = error.key;
     const func = messages[key];
     //Не ??, так как error.message по умолчанию ' '
-    const message = (error.message || func?.(...error.messageArgs)) + 
-      (error.cause ? `\nCause: ${error.cause.message}` : '');
+    const message = (func?.(...error.messageArgs) ?? '') + error.message;
     return message;
   }
   
@@ -88,7 +88,7 @@ class ErrorHandler {
   static log(messages = {}, options) {
     if (!this.#validateOptions(options)) return;
     const error = this.#constructError(messages, options);
-    console.error(error + '\n');
+    console.error(error.stack + '\n');
   }
 
   static #log = this.log.bind(this, this.ERROR_MESSAGES);
