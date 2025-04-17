@@ -5,7 +5,6 @@ class KeyError extends Error {
       nestingNumber = (cause.nestingNumber ?? 0) + 1;
       message += `\nCause ${cause.nestingNumber}: ${cause.message}`;
     } 
-    Error.stackTraceLimit = 0;
     super(message, { cause });
     this.options = { cause: cause };
     this.interaction = interaction;
@@ -15,7 +14,6 @@ class KeyError extends Error {
     this.key = key;
     this.messageArgs = messageArgs;
     this.nestingNumber = nestingNumber ?? 0;
-    Error.stackTraceLimit = 10;
     Error.captureStackTrace(this, ErrorHandler.log);
   }
 }
@@ -97,7 +95,7 @@ class ErrorHandler {
   static log(messages = {}, options) {
     if (!this.#validateOptions(options)) return;
     options = this.#constructError(messages, options);
-    const error = error.stack ? options : new KeyError(options);
+    const error = options.stack ? options : new KeyError(options);
     console.error(error.stack + '\n');
   }
 
