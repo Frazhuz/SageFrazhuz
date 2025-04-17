@@ -91,6 +91,7 @@ class ErrorHandler {
     error.message = error.interaction 
       ? this.#constructAdvancedMessage(messages, error) 
       : this.#constructBasicMessage(messages, error);
+    console.log(`#constructError ${error.name}: ${error.message}`);
     return error;
   }
   
@@ -98,6 +99,8 @@ class ErrorHandler {
   static log(messages = {}, options) {
     if (!this.#validateOptions(options)) return;
     const error = this.#constructError(messages, options);
+    console.log(`#log message ${error.name}: ${error.message}`);
+    console.log(`#log stack ${error.name}: ${error.stack}`);
     console.error(error.stack + '\n');
   }
 
