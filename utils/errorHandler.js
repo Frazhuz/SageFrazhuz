@@ -7,7 +7,7 @@ class KeyError extends Error {
     this.key = key;
     this.identificator = key;
     this.messageArgs = Object.values(messageArgs);
-    this.message = message + (error.cause ? `\nCause: ${error.cause.message}` : '');
+    this.message = message + (cause ? `\nCause: ${cause.message}` : '');
   }
 }
 
