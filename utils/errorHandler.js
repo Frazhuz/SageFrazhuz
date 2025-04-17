@@ -92,7 +92,7 @@ class ErrorHandler {
       return;
     }
     const error = this.#constructError(messages, options);
-    console.error(`${error.name}. ${error.message} =>\n${error.stack}\n\n`);
+    console.error(`${error.name}. ${error.message} =>\n${error.stack}\n`);
   }
 
   static #log = this.log.bind(this, this.ERROR_MESSAGES);
