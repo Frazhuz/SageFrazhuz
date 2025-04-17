@@ -62,6 +62,7 @@ class ErrorHandler {
     console.log(`${error.name}: ${error.messageArgs}`);
     console.log(`${error.name}: ${func?.(...error.messageArgs)}`);
     const message = (func?.(...error.messageArgs) ?? '') + error.message;
+    console.log(`${error.name}: ${message}`);
     return message;
   }
   
