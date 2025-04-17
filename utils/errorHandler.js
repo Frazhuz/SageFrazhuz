@@ -58,8 +58,7 @@ class ErrorHandler {
   static #constructBasicMessage(messages, {message, key, messageArgs = {} } ) {
     const func = messages[key];
     const args = Object.values(messageArgs);
-    let message = (func?.(...args) ?? '') + message;
-    return message;
+    return (func?.(...args) ?? '') + message;
   }
   
   static #getContext(interaction) {
