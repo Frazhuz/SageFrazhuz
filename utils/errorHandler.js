@@ -1,5 +1,5 @@
 class KeyError extends Error {
-  constructor({ name = 'KeyError', message, reply, key, identificator, cause, interaction, ...messageArgs } = {}) {
+  constructor({ isConstructed = false, name = 'KeyError', message, reply, key, identificator, cause, interaction, ...messageArgs } = {}) {
     super(message, {cause});
     this.interaction = interaction;
     this.name = name;
@@ -82,6 +82,7 @@ class ErrorHandler {
     error.message = error.interaction 
       ? this.#constructAdvancedMessage(messages, error) 
       : this.#constructBasicMessage(messages, error);
+    error.isConstructed = true;
     return error;
   }
   
@@ -91,7 +92,7 @@ class ErrorHandler {
       console.error(ErrorHandler.ERROR_MESSAGES.EMPTY_ERROR);
       return;
     }
-    const error = this.#constructError(messages, options);
+    const error = options.isConstructed ? options : this.#constructError(messages, options);
     console.error(`${error.name}. ${error.message} =>\n${error.stack}\n`);
   }
 
@@ -101,7 +102,7 @@ class ErrorHandler {
     if (!this.#validateOptions(options)) return;
     const error = this.#constructError(messages, options);
     if (!this.#validateInteraction(error)) return;
-    //this.#log(error);
+    this.#log(error);
     error.reply ??= replies[error.key] ?? this.DEFAULT_ERROR_REPLY;
     try {
       const interaction = error.interaction;
