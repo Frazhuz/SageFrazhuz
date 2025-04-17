@@ -19,7 +19,7 @@ class KeyError extends Error {
 
 
 class ErrorHandler {
-  constructor(messages = {}, client, interaction, replies = {}) {
+  constructor(messages = {}, client, replies = {}, interaction) {
     this.messages = messages;
     this.client = client;
     this.interaction = interaction;
