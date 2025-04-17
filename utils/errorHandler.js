@@ -97,7 +97,7 @@ class ErrorHandler {
     if (!this.#validateOptions(options)) return;
     options = this.#constructError(messages, options);
     const error = options.stack ? options : new KeyError(options);
-    Error.captureStackTrace(this, ErrorHandler.log);
+    //Error.captureStackTrace(this, ErrorHandler.log);
     console.log('message' + error.message)
     console.error(error.stack + '\n');
   }
