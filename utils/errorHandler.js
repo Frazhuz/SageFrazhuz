@@ -61,6 +61,7 @@ class ErrorHandler {
     const args = Object.values(options.messageArgs ?? {});
     //Важно использовать именно ||, так как option.message может быть ' '
     let message = (options.message || func?.(...args));
+    console.log('#constructBasicMessage' + message)
     return message;
   }
   
@@ -95,9 +96,8 @@ class ErrorHandler {
   static log(messages = {}, options) {
     if (!this.#validateOptions(options)) return;
     options = this.#constructError(messages, options);
-    //const error = options.stack ? options : new KeyError(options);
-    //Error.captureStackTrace(this, ErrorHandler.log);
-    const error = new KeyError(options);
+    const error = options.stack ? options : new KeyError(options);
+    Error.captureStackTrace(this, ErrorHandler.log);
     console.log('message' + error.message)
     console.error(error.stack + '\n');
   }
