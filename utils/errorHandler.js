@@ -1,6 +1,10 @@
 class KeyError extends Error {
   constructor({ message, reply, key, cause, interaction, ...messageArgs } = {}) {
-    if (cause) message += `\nCause ${cause.nestingNumber ?? 1}: ${cause.message}`;
+    let nestingNumber; 
+    if (cause) {
+      nestingNumber = (cause.nestingNumber ?? 0) + 1;
+      message += `\nCause ${cause.nestingNumber}: ${cause.message}`;
+    } 
     Error.stackTraceLimit = 0;
     super(message, { cause });
     this.options = { cause: cause };
@@ -10,7 +14,7 @@ class KeyError extends Error {
     this.reply = reply;
     this.key = key;
     this.messageArgs = messageArgs;
-    this.nestingNumber = cause ? ((cause.nestingNumber ?? 0) + 1) : 0;
+    this.nestingNumber = nestingNumber ?? 0;
     Error.stackTraceLimit = 10;
     Error.captureStackTrace(this, ErrorHandler.log);
   }
@@ -57,7 +61,6 @@ class ErrorHandler {
     const key = options.key;
     const func = messages[key];
     const args = Object.values(options.messageArgs ?? {});
-    const cause = options.options.cause;
     //Важно использовать именно ||, так как option.message может быть ' '
     let message = (options.message || func?.(...args));
     return message;
@@ -93,7 +96,8 @@ class ErrorHandler {
   
   static log(messages = {}, options) {
     if (!this.#validateOptions(options)) return;
-    const error = new KeyError(this.#constructError(messages, options));
+    options = this.#constructError(messages, options);
+    const error = error.stack ? options : new KeyError(options);
     console.error(error.stack + '\n');
   }
 
