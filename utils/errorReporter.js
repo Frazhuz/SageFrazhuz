@@ -1,100 +1,81 @@
 class KeyError extends Error {
-  constructor(key, { cause, primaryError, messageArgs }) {
-    let message = '';
+  constructor(key, { message = '', cause, primaryError, args } = {}) {
     if (cause) message += `\nCause: ${cause.message}`;
     if (primaryError) message += `\nPrimary error: ${primaryError.identificator}`;
     super(message, {cause});
     this.key = key;
-    this.name = key ?? 'KeyError';
     this.primaryError = primaryError;
+    this.args = args;
+    this.name = key ?? 'KeyError';
     this.identificator = key ?? (message.split(' ').slice(0, 3).join(' ') + '...');
-    this.messageArgs = messageArgs;
   }
 }
 
+const ERROR_MESSAGES = {
+    NO_INTERACTION: () => `No interaction was passed when attempting to log an error.`,
+    EXPIRED_INTERACTION: () => `Interaction is expired. Attempt to reply user about error failed.`,
+    EMPTY_ERROR: () => 'Attempt to send empty error',
+    FAILED_REPLY: () => `Attempt to reply user about error failed.`,
+}
+
+const DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
+
+const reporter = (() => {
+  let instance;
+  return {
+    get() {
+      if (!instance) instance = new ErrorReporter(ERROR_MESSAGES);
+      return instance;
+    }
+  };
+})();
 
 class ErrorReporter {
   constructor(messages = {}, client, replies = {}, interaction) {
     this.messages = messages;
     this.client = client;
-    this.interaction = interaction;
     this.replies = replies;
+    this.interaction = interaction;
   }
 
   async exec(key, options) {
-    if (!key) return await #reporter.exec('EMPTY_ERROR');
-    const error = this.#constructError(options);
+    reporter.client = this.client;
+    if (!key) return await reporter.exec('EMPTY_ERROR');
+    const error = this.#constructError(key, options);
     this.#log(error);
-    error.reply ??= this.replies[error.key] ?? ErrorReporter.#DEFAULT_ERROR_REPLY;
+    const reply = this.replies[error.key] ?? ErrorReporter.#DEFAULT_ERROR_REPLY;
     try {
-      if (!this.interaction.isRepliable()) {
-        ErrorHandler.#internalLog({ key: 'EXPIRED_INTERACTION', messageArgs: error.identificator });
-        return;
-      }
+      if (!this.interaction.isRepliable()) return await reporter.exec('EXPIRED_INTERACTION', { primaryError: error });
       if (this.interaction.replied) {
-        await this.interaction.followUp(error.reply);
+        await this.interaction.followUp(reply);
       } else if (this.interaction.deferred) {
-        await this.interaction.editReply(error.reply);
+        await this.interaction.editReply(reply);
       } else {
-        await this.interaction.reply(error.reply);
+        await this.interaction.reply(reply);
       }
-    } catch (failedReply) {
-      ErrorHandler.#internalLog({ key: 'FAILED_REPLY', cause: failedReply, messageArgs: error.identificator });
+    } catch (cause) {
+      reporter.exec('FAILED_REPLY', { cause, primaryError: error });
     }
-  }
-
-    log(options) {
-    if (!this.#validateOptions(options)) return;
-    const error = this.#constructError(options);
-    this.#log(error);
-  }
-
-  
-  static #ERROR_MESSAGES = {
-    NO_INTERACTION: () => `No interaction was passed when attempting to log an error.`,
-    EXPIRED_INTERACTION: (primaryError) => `Interaction is expired. Attempt to reply user about error: "${primaryError}" failed.`,
-    EMPTY_ERROR: () => 'Attempt to send empty error',
-    NO_FUNCTION: (handler) => `${handler} isn't function`,
-    FAILED_REPLY: (primaryError) => `Attempt to reply user about error: "${primaryError}" failed.`
-  }
-
-  static #DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
-
-  static #_internalLog;
-
-  static get #internalLog() {
-    if(!this.#_internalLog) {
-      this.#_internalLog = new ErrorHandler(this.#ERROR_MESSAGES).log;
-    }
-    return this.#_internalLog;
   }
   
-  #validateOptions(options) {
-    if (!options) {
-      ErrorHandler.#internalLog({ key: 'EMPTY_ERROR' });
-      return false;
-    }
-    return true;
+  #constructError(key, options) {
+    options.message = this.#constructFullMessage(key, options);
+    return new KeyError(key, options);
   }
 
-  #validateInteraction(error) {
-    if (!this.interaction) {
-      ErrorHandler.#internalLog;
-      return false;
-    }
-    return true;
+  #constructFullMessage(key, options) {
+    let message = this.#constructBasicMessage(key, options);
+    if (!this.interaction) return message;
+    const context = this.#getContext();
+    message = 
+      `${context.username} (${context.userId}) ` +
+      `on ${context.guildName} ` +
+      `during ${context.commandName} =>` + 
+      `\n${message}`;
+    return message;
   }
 
-  #validateFunction(handler) {
-    if (typeof handler !== 'function') {
-      ErrorHandler.#internalLog({ key: 'NO_FUNCTION', messageArgs: handler });
-      return false;
-    }
-    return true;
-  }
-
-  
-  #constructBasicMessage( { message = '', key, messageArgs } ) {
+  #constructBasicMessage(key, { message = '', args } ) {
     const func = this.messages[key];
     return (func?.(messageArgs) ?? '') + message;
   }
@@ -108,28 +89,9 @@ class ErrorReporter {
     };
   }
 
-  #constructFullMessage(options) {
-    let message = this.#constructBasicMessage(options);
-    if (!this.interaction) return message;
-    const context = this.#getContext();
-    message = 
-      `${context.username} (${context.userId}) ` +
-      `on ${context.guildName} ` +
-      `during ${context.commandName} =>` + 
-      `\n${message}`;
-    return message;
-  }
-
-  #constructError(options) {
-    options.message = this.#constructFullMessage(options);
-    return (options.stack ? options : new KeyError(options));
-  }
-
   #log(error) {
-    console.error(error.stack + '\n');
+    console.error(`${error.name}: ${error.stack}/n`);
   }
-
-  
 }
 
 module.exports = {
