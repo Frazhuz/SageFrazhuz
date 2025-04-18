@@ -38,8 +38,8 @@ client.login(process.env.DISCORD_TOKEN)
   .then(
     () => {
       reporter.client = client;
-      const loadReporter = new ErrorReporter(CommandLoader.ERROR_MESSAGES, client);
-      return Promise.all(COMMAND_PATHS.map(item => CommandLoader.exec(...item, loadReporter)));
+      CommandLoader.reporter = new ErrorReporter(CommandLoader.ERROR_MESSAGES, client);
+      return Promise.all(COMMAND_PATHS.map(item => CommandLoader.exec(...item)));
     },
     cause => reporter.exec({ key: 'FAILED_LOGIN', cause: cause })
   )
