@@ -1,7 +1,9 @@
+"use strict"
+
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const CommandLoader = require('./utils/commandLoader.js');
-const { KeyError, genReportError } = require('./utils/errorHandler.js');
+const { KeyError, ErrorReporter } = require('./utils/errorReporter.js');
 
 const ERROR_MESSAGES = {
   NO_DISCORD_TOKEN: () => 'Missing DISCORD_TOKEN in .env',
@@ -13,13 +15,17 @@ const ERROR_MESSAGES = {
 };
 
 const ERROR_REPLIES = {
-  UNKNOWN_COMMAND: '⚠️ This command does not exist or not loaded yet.'
+  UNKNOWN_COMMAND: '⚠️ This command does not exist or not loaded yet.',
 };
 
-const reportError = genReportError(ERROR_MESSAGES);
+const COMMAND_PATHS = [
+  ['ping', './commands/ping.js'],
+  ['say', '../commands/say.js'],
+  ['import', '../commands/import/import.js'],
+];
 
-if (!process.env.DISCORD_TOKEN) reportError({ key: 'NO_DISCORD_TOKEN' });
-
+const reporter = new ErrorReporter(ERROR_MESSAGES);
+if (!process.env.DISCORD_TOKEN) reporter.exec({ key: 'NO_DISCORD_TOKEN' });
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -29,51 +35,48 @@ const client = new Client({
 
 let commands = {};
 client.login(process.env.DISCORD_TOKEN)
-  .then(() => {
-    reportError.client = client;
-    CommandLoader.reportError = genReportError(CommandLoader.ERROR_MESSAGES, client);
-    return Promise.all([
-      CommandLoader.load('ping', './commands/ping.js'),
-      CommandLoader.load('say', '../commands/say.js'),
-      CommandLoader.load('import', '../commands/import/import.js'),
-    ]);
-  })
-  .catch(cause => reportError({ key: 'FAILED_LOGIN', cause: cause }))
-  .then(commandArray => commands = Object.fromEntries(commandArray))
-  .catch(cause => reportError({ key: 'FAILED_LOAD', cause: cause }));
+  .then(
+    () => {
+      reporter.client = client;
+      const loadReporter = new ErrorReporter(CommandLoader.ERROR_MESSAGES, client);
+      return Promise.all(COMMAND_PATHS.map(item => CommandLoader.exec(...item, loadReporter)));
+    },
+    cause => reporter.exec({ key: 'FAILED_LOGIN', cause: cause })
+  )
+  .then(
+    commandArray => commands = Object.fromEntries(commandArray),
+    cause => reporter.exec({ key: 'FAILED_LOAD', cause: cause })
+  )
   
 process.on(
   'unhandledRejection',
-  (cause) => reportError({ key: 'UNHANDLED_REJECTION', cause: cause })
+  (cause) => reporter.exec({ key: 'UNHANDLED_REJECTION', cause: cause })
   );
 
 process.on(
   'uncaughtException',
-  (cause) => reportError({ key: 'UNCAUGHT_EXCEPTION', cause: cause })
+  (cause) => reporter.exec({ key: 'UNCAUGHT_EXCEPTION', cause: cause })
   );
 
 client.on('ready', () => console.log(`🤖 Bot logged in as ${client.user.tag}`));
 
 client.on('interactionCreate', async (interaction) => {
-  const ReportInteractionError = genReportError(ERROR_MESSAGES, client, ERROR_REPLIES, interaction);
+  const interactReporter = new ErrorReporter(ERROR_MESSAGES, client, ERROR_REPLIES, interaction);
   if (!interaction.isChatInputCommand()) return;
   const command = commands[interaction.commandName];
-  if (!command) {
-    await ReportInteractionError({key: 'UNKNOWN_COMMAND'});
-    return;
-  }
+  if (!command) return await interactReporter.exec({key: 'UNKNOWN_COMMAND'});
 
-  const ReportCommandError = genReportError(
+  const commandReporter = new ErrorReporter(
     command.ERROR_MESSAGES, 
-    client,
+    client, 
     command.ERROR_REPLIES,
     interaction
   );
   
   try {
-    command.execute(interaction);
+    command.exec(interaction);
   } catch(error) {
-    ReportCommandError(error)
+    commandReporter.exec(error)
   };
 });
 
