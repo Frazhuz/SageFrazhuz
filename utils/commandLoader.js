@@ -31,7 +31,7 @@ class CommandLoader {
   }
 
   static async #generateErrorReply(key, identificator, cause) {
-    this.reporter.exec({ key: key, cause: cause, messageArgs: identificator });
+    this.reporter.exec(key, { cause, args: identificator });
     return [identificator, { exec: (interaction) => interaction.reply(this.ERROR_REPLIES[key]) }];
   }
 }
