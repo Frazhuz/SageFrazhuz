@@ -1,29 +1,52 @@
 class KeyError extends Error {
-  constructor({ message = '', reply, key, cause, interaction, messageArgs } = {}) {
-    let nestingNumber; 
-    if (cause) {
-      nestingNumber = (cause.nestingNumber ?? 0) + 1;
-      message += `\nCause ${nestingNumber}: ${cause.message}`;
-    } 
-    super(message, { cause });
-    this.interaction = interaction;
-    this.name = key ?? 'KeyError';
-    this.identificator = key ?? (message.split(' ').slice(0, 3).join(' ') + '...');
-    this.reply = reply;
+  constructor(key, { cause, primaryError, messageArgs }) {
+    let message = '';
+    if (cause) message += `\nCause: ${cause.message}`;
+    if (primaryError) message += `\nPrimary error: ${primaryError.identificator}`;
+    super(message, {cause});
     this.key = key;
+    this.name = key ?? 'KeyError';
+    this.primaryError = primaryError;
+    this.identificator = key ?? (message.split(' ').slice(0, 3).join(' ') + '...');
     this.messageArgs = messageArgs;
-    this.nestingNumber = nestingNumber ?? 0;
-    //Error.captureStackTrace(this, ErrorHandler.log);
   }
 }
 
 
-class ErrorHandler {
+class ErrorReporter {
   constructor(messages = {}, client, replies = {}, interaction) {
     this.messages = messages;
     this.client = client;
     this.interaction = interaction;
     this.replies = replies;
+  }
+
+  async exec(key, options) {
+    if (!key) return await #reporter.exec('EMPTY_ERROR');
+    const error = this.#constructError(options);
+    this.#log(error);
+    error.reply ??= this.replies[error.key] ?? ErrorReporter.#DEFAULT_ERROR_REPLY;
+    try {
+      if (!this.interaction.isRepliable()) {
+        ErrorHandler.#internalLog({ key: 'EXPIRED_INTERACTION', messageArgs: error.identificator });
+        return;
+      }
+      if (this.interaction.replied) {
+        await this.interaction.followUp(error.reply);
+      } else if (this.interaction.deferred) {
+        await this.interaction.editReply(error.reply);
+      } else {
+        await this.interaction.reply(error.reply);
+      }
+    } catch (failedReply) {
+      ErrorHandler.#internalLog({ key: 'FAILED_REPLY', cause: failedReply, messageArgs: error.identificator });
+    }
+  }
+
+    log(options) {
+    if (!this.#validateOptions(options)) return;
+    const error = this.#constructError(options);
+    this.#log(error);
   }
 
   
@@ -56,7 +79,7 @@ class ErrorHandler {
 
   #validateInteraction(error) {
     if (!this.interaction) {
-      ErrorHandler.#internalLog({ key: 'NO_INTERACTION', cause: error });
+      ErrorHandler.#internalLog;
       return false;
     }
     return true;
@@ -106,38 +129,10 @@ class ErrorHandler {
     console.error(error.stack + '\n');
   }
 
-  log(options) {
-    if (!this.#validateOptions(options)) return;
-    const error = this.#constructError(options);
-    this.#log(error);
-  }
-
   
-  async reply(options) {
-    if (!this.#validateOptions(options)) return;
-    const error = this.#constructError(options);
-    if (!this.#validateInteraction(error)) return;
-    this.#log(error);
-    error.reply ??= this.replies[error.key] ?? ErrorHandler.#DEFAULT_ERROR_REPLY;
-    try {
-      if (!this.interaction.isRepliable()) {
-        ErrorHandler.#internalLog({ key: 'EXPIRED_INTERACTION', messageArgs: error.identificator });
-        return;
-      }
-      if (this.interaction.replied) {
-        await this.interaction.followUp(error.reply);
-      } else if (this.interaction.deferred) {
-        await this.interaction.editReply(error.reply);
-      } else {
-        await this.interaction.reply(error.reply);
-      }
-    } catch (failedReply) {
-      ErrorHandler.#internalLog({ key: 'FAILED_REPLY', cause: failedReply, messageArgs: error.identificator });
-    }
-  }
 }
 
 module.exports = {
   KeyError,
-  ErrorHandler
+  ErrorReporter
 };
