@@ -64,7 +64,7 @@ client.on('interactionCreate', async (interaction) => {
   const interactReporter = new ErrorReporter(ERROR_MESSAGES, client, ERROR_REPLIES, interaction);
   if (!interaction.isChatInputCommand()) return;
   const command = commands[interaction.commandName];
-  if (!command) return await interactReporter.exec('UNKNOWN_COMMAND');
+  if (!command) return await interactReporter.exec('UNKNOWN_COMMAND', {forcedReply: true});
 
   const commandReporter = new ErrorReporter(
     command.ERROR_MESSAGES, 
@@ -76,6 +76,7 @@ client.on('interactionCreate', async (interaction) => {
   try {
     command.exec(interaction);
   } catch(error) {
+    error.forcedReply = true;
     commandReporter.exec(error)
   };
 });

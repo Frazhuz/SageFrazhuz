@@ -1,14 +1,19 @@
 class KeyError extends Error {
-  constructor(key, { message = '', cause, primaryError, args } = {}) {
-    if (cause) message += `\nCause: ${cause.message}`;
-    if (primaryError) message += `\nPrimary error: ${primaryError.identificator}`;
+  constructor(key, { cause, primaryError, forcedReply, args } = {}) {
+    let message = key ? '' : 'Non-wrapped error';
+    if (cause) message += `\nCause ${cause.id ?? cause.name}: ${cause.message}`;
+    if (primaryError) message += `\nPrimary error: ${primaryError.id}`;
     super(message, {cause});
+    this.id = ++this.index;
     this.key = key;
-    this.primaryError = primaryError;
-    this.args = args;
     this.name = key ?? 'KeyError';
-    this.identificator = key ?? (message.split(' ').slice(0, 3).join(' ') + '...');
+    this.context = cause.context;
+    this.options.primaryError = primaryError;
+    this.options.forcedReply = forcedReply;
+    this.options.args = args;
   }
+
+  static index = 0;
 }
 
 const ERROR_MESSAGES = {
@@ -16,6 +21,7 @@ const ERROR_MESSAGES = {
     EXPIRED_INTERACTION: () => `Interaction is expired. Attempt to reply user about error failed.`,
     EMPTY_ERROR: () => 'Attempt to send empty error',
     FAILED_REPLY: () => `Attempt to reply user about error failed.`,
+    TOO_MANY_ARGUMENTS: () => `Error and options cannot be specified at the same time.`,
 }
 
 const DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
@@ -38,12 +44,41 @@ class ErrorReporter {
     this.interaction = interaction;
   }
 
-  async exec(key, options) {
+  async exec(first, second) {
     reporter.client = this.client;
-    if (!key) return await reporter.exec('EMPTY_ERROR');
-    const error = this.#constructError(key, options);
+    if (!first) return await reporter.exec('EMPTY_ERROR');
+    const error = first instanceof Error ? this.#supplementError(first) : this.#constructError(first, second);
+    if (first instanceof Error && second) return await reporter.exec('TOO_MANY_ARGUMENTS', {cause: error});
+    if (!error.context) error.context = this.#getContext();
     this.#log(error);
-    const reply = this.replies[error.key] ?? ErrorReporter.#DEFAULT_ERROR_REPLY;
+    this.#reply(error);
+  }
+
+  #supplementError(error) {
+    return error instanceof KeyError ? error : new KeyError(null, {cause: error});
+  }
+  
+  #constructError(key, options) {
+    const func = this.messages[key];
+    options.message = func?.(options.args);
+    return new KeyError(key, options);
+  }
+
+  #getContext() {
+    const username = this.interaction.user?.username ?? 'N/A';
+    const userId = this.interaction.user?.id ?? 'N/A';
+    const guildName = this.interaction.guild?.name ?? 'DM';
+    const commandName = this.interaction.commandName ?? 'N/A';
+    const text = `${username} (${userId} on ${guildName} during ${commandName} =>`;
+    return { username, userId, guildName, commandName, text }
+  }
+
+  #log(error) {
+    console.error(`${error.context.text}\n${error.name}: ${error.stack}\n`);
+  }
+
+  async #reply(error) {
+    const reply = this.replies[error.key] ?? DEFAULT_ERROR_REPLY;
     try {
       if (!this.interaction.isRepliable()) return await reporter.exec('EXPIRED_INTERACTION', { primaryError: error });
       if (this.interaction.replied) {
@@ -56,41 +91,6 @@ class ErrorReporter {
     } catch (cause) {
       reporter.exec('FAILED_REPLY', { cause, primaryError: error });
     }
-  }
-  
-  #constructError(key, options) {
-    options.message = this.#constructFullMessage(key, options);
-    return new KeyError(key, options);
-  }
-
-  #constructFullMessage(key, options) {
-    let message = this.#constructBasicMessage(key, options);
-    if (!this.interaction) return message;
-    const context = this.#getContext();
-    message = 
-      `${context.username} (${context.userId}) ` +
-      `on ${context.guildName} ` +
-      `during ${context.commandName} =>` + 
-      `\n${message}`;
-    return message;
-  }
-
-  #constructBasicMessage(key, { message = '', args } ) {
-    const func = this.messages[key];
-    return (func?.(messageArgs) ?? '') + message;
-  }
-
-  #getContext() {
-    return {
-      username: this.interaction.user?.username ?? 'N/A',
-      userId: this.interaction.user?.id ?? 'N/A',
-      guildName: this.interaction.guild?.name ?? 'DM',
-      commandName: this.interaction.commandName ?? 'N/A',
-    };
-  }
-
-  #log(error) {
-    console.error(`${error.name}: ${error.stack}/n`);
   }
 }
 
