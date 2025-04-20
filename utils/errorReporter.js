@@ -8,6 +8,7 @@ class KeyError extends Error {
     this.key = key;
     this.name = key ?? 'KeyError';
     this.context = cause.context;
+    this.options = {};
     this.options.primaryError = primaryError;
     this.options.forcedReply = forcedReply;
     this.options.args = args;
