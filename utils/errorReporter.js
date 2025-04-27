@@ -1,14 +1,14 @@
 const { inspect } = require('node:util');
 
-class KeyError extends Error {
-  constructor(key, { cause, primaryError, forcedReply, args } = {}) {
-    let message = key ? '' : 'Non-wrapped error';
+class BotError extends Error {
+  constructor(code, { cause, primaryError, forcedReply, args } = {}) {
+    let message = code ? '' : 'Non-wrapped error';
     super(message, {cause});
-    if (cause) this.stack += `\nCause ${cause.id ?? cause.name}: ${cause.stack}`;
+    if (cause) this.stack += `\nCause: ${cause.id ?? cause.name}: ${cause.stack}`;
     if (primaryError) this.stack += `\nPrimary error: ${primaryError.id}`;
-    this.id = ++(KeyError.index);
-    this.key = key;
-    this.name = key ?? 'KeyError';
+    this.id = ++(BotError.index);
+    this.code = code;
+    this.name = code ?? 'BotError';
     this.context = cause?.context;
     this.options = {};
     this.options.primaryError = primaryError;
@@ -71,12 +71,12 @@ class ErrorReporter {
     }
   }
 
-  #supplementError = (error) => error instanceof KeyError ? error : new KeyError(null, {cause: error});
+  #supplementError = (error) => error instanceof BotError ? error : new BotError(null, {cause: error});
   
-  #constructError(key, options) {
-    const func = this.messages[key];
+  #constructError(code, options) {
+    const func = this.messages[code];
     options.message = func?.(options.args);
-    return new KeyError(key, options);
+    return new BotError(code, options);
   }
 
   #getContext() {
@@ -97,7 +97,7 @@ class ErrorReporter {
   }
 
   async #reply(error) {
-    const reply = this.replies[error.key] ?? DEFAULT_ERROR_REPLY;
+    const reply = this.replies[error.code] ?? DEFAULT_ERROR_REPLY;
     try {
       if (!this.interaction.isRepliable()) return await this.#reporter.exec('EXPIRED_INTERACTION', { primaryError: error });
       if (this.interaction.replied) {
@@ -114,6 +114,6 @@ class ErrorReporter {
 }
 
 module.exports = {
-  KeyError,
+  BotError,
   ErrorReporter
 };

@@ -4,7 +4,7 @@ console.log("Script starts.");
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const CommandLoader = require('./utils/commandLoader.js');
-const { KeyError, ErrorReporter } = require('./utils/errorReporter.js');
+const { BotError, ErrorReporter } = require('./utils/errorReporter.js');
 console.log("Dependencies have been loaded!");
 
 
