@@ -1,13 +1,15 @@
+const { inspect } = require('node:util');
+
 class KeyError extends Error {
   constructor(key, { cause, primaryError, forcedReply, args } = {}) {
     let message = key ? '' : 'Non-wrapped error';
-    if (cause) message += `\nCause ${cause.id ?? cause.name}: ${cause.message}`;
-    if (primaryError) message += `\nPrimary error: ${primaryError.id}`;
     super(message, {cause});
-    this.id = ++this.index;
+    if (cause) this.stack += `\nCause ${cause.id ?? cause.name}: ${cause.stack}`;
+    if (primaryError) this.stack += `\nPrimary error: ${primaryError.id}`;
+    this.id = ++(KeyError.index);
     this.key = key;
     this.name = key ?? 'KeyError';
-    this.context = cause.context;
+    this.context = cause?.context;
     this.options = {};
     this.options.primaryError = primaryError;
     this.options.forcedReply = forcedReply;
@@ -23,19 +25,10 @@ const ERROR_MESSAGES = {
     EMPTY_ERROR: () => 'Attempt to send empty error',
     FAILED_REPLY: () => `Attempt to reply user about error failed.`,
     TOO_MANY_ARGUMENTS: () => `Error and options cannot be specified at the same time.`,
+    UNEXPECTED_ERROR: ({first, second}) => `Unexpected secondary error while reporting an error: ${first}, ${second}`,
 }
 
 const DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
-
-const reporter = (() => {
-  let instance;
-  return {
-    get() {
-      if (!instance) instance = new ErrorReporter(ERROR_MESSAGES);
-      return instance;
-    }
-  };
-})();
 
 class ErrorReporter {
   constructor(messages = {}, client, replies = {}, interaction) {
@@ -45,19 +38,40 @@ class ErrorReporter {
     this.interaction = interaction;
   }
 
-  async exec(first, second) {
-    reporter.client = this.client;
-    if (!first) return await reporter.exec('EMPTY_ERROR');
-    const error = first instanceof Error ? this.#supplementError(first) : this.#constructError(first, second);
-    if (first instanceof Error && second) return await reporter.exec('TOO_MANY_ARGUMENTS', {cause: error});
-    if (!error.context) error.context = this.#getContext();
-    this.#log(error);
-    this.#reply(error);
+  _reporter;
+
+  get #reporter() {
+    if (!this._reporter) {
+      this._reporter = new ErrorReporter(ERROR_MESSAGES);
+      this._reporter._reporter = {
+        exec(first, second) {
+          console.error(`Too high nesting of errors: ${first}, ${second}`);
+        }
+      }
+    }
+    return this._reporter;
   }
 
-  #supplementError(error) {
-    return error instanceof KeyError ? error : new KeyError(null, {cause: error});
+  async exec(first, second) {
+    try {
+      this.#reporter.client = this.client;
+      if (!first) return await this.#reporter.exec('EMPTY_ERROR');
+      const error = first instanceof Error ? this.#supplementError(first) : this.#constructError(first, second);
+      if (first instanceof Error && second) return await this.#reporter.exec('TOO_MANY_ARGUMENTS', {cause: error});
+      if (!error.context) error.context = this.#getContext();
+      this.#log(error);
+      if (this.interaction) this.#reply(error);
+    }
+    catch (error) {
+      console.error(`Unexpected error in ErrorReporter =>\n` + 
+        `${inspect(error)}\n` +
+        `First argument: ${inspect(first)}\n` +
+        `Second argument: ${inspect(second)}\n`);
+
+    }
   }
+
+  #supplementError = (error) => error instanceof KeyError ? error : new KeyError(null, {cause: error});
   
   #constructError(key, options) {
     const func = this.messages[key];
@@ -66,22 +80,26 @@ class ErrorReporter {
   }
 
   #getContext() {
-    const username = this.interaction.user?.username ?? 'N/A';
-    const userId = this.interaction.user?.id ?? 'N/A';
-    const guildName = this.interaction.guild?.name ?? 'DM';
-    const commandName = this.interaction.commandName ?? 'N/A';
-    const text = `${username} (${userId} on ${guildName} during ${commandName} =>`;
-    return { username, userId, guildName, commandName, text }
+    if (this.interaction) {
+      const username = this.interaction.user?.username ?? 'N/A';
+      const userId = this.interaction.user?.id ?? 'N/A';
+      const guildName = this.interaction.guild?.name ?? 'DM';
+      const commandName = this.interaction.commandName ?? 'N/A';
+      const text = `${username} (${userId} on ${guildName} during ${commandName} =>`;
+      return { username, userId, guildName, commandName, text }
+    } else {
+      return { text: "Global =>"}
+    }
   }
 
   #log(error) {
-    console.error(`${error.context.text}\n${error.name}: ${error.stack}\n`);
+    console.error(`${error.id}. ${error.context.text}\n${error.name}: ${error.stack}\n`);
   }
 
   async #reply(error) {
     const reply = this.replies[error.key] ?? DEFAULT_ERROR_REPLY;
     try {
-      if (!this.interaction.isRepliable()) return await reporter.exec('EXPIRED_INTERACTION', { primaryError: error });
+      if (!this.interaction.isRepliable()) return await this.#reporter.exec('EXPIRED_INTERACTION', { primaryError: error });
       if (this.interaction.replied) {
         await this.interaction.followUp(reply);
       } else if (this.interaction.deferred) {
@@ -90,7 +108,7 @@ class ErrorReporter {
         await this.interaction.reply(reply);
       }
     } catch (cause) {
-      reporter.exec('FAILED_REPLY', { cause, primaryError: error });
+      this.#reporter.exec('FAILED_REPLY', { cause, primaryError: error });
     }
   }
 }

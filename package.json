@@ -12,9 +12,9 @@
     "axios": "^1.8.4",
     "discord.js": "^14.18.0",
     "dotenv": "^16.5.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "util": "^0.12.5"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Frazhuz/SageFrazhuz.git"

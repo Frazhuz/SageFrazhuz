@@ -1,9 +1,12 @@
 "use strict"
 
+console.log("Script starts.");
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const CommandLoader = require('./utils/commandLoader.js');
 const { KeyError, ErrorReporter } = require('./utils/errorReporter.js');
+console.log("Dependencies have been loaded!");
+
 
 const ERROR_MESSAGES = {
   NO_DISCORD_TOKEN: () => 'Missing DISCORD_TOKEN in .env',
@@ -19,7 +22,7 @@ const ERROR_REPLIES = {
 };
 
 const COMMAND_PATHS = [
-  ['ping', './commands/ping.js'],
+  ['ping', '../commands/ping.js'],
   ['say', '../commands/say.js'],
   ['import', '../commands/import/import.js'],
 ];
@@ -33,15 +36,17 @@ const client = new Client({
   ]
 });
 
+console.log("Client and reporter are created. Attempting to log in...");
+
 let commands = {};
-client.login(process.env.DISCORD_TOKEN)
+client.login(process.env.DISCORD_TOKEN + "ddkdk")
+  .catch(cause => reporter.exec('FAILED_LOGIN', {cause}))
   .then(
     () => {
       reporter.client = client;
       CommandLoader.reporter = new ErrorReporter(CommandLoader.ERROR_MESSAGES, client);
       return Promise.all(COMMAND_PATHS.map(item => CommandLoader.exec(...item)));
-    },
-    cause => reporter.exec('FAILED_LOGIN', {cause})
+    }
   )
   .then(
     commandArray => commands = Object.fromEntries(commandArray),
