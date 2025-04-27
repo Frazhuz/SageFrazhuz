@@ -2,9 +2,9 @@ export default class CommandLoader {
   static ERROR_MESSAGES = {
     MISSING_PATH: (identificator) => `Missing path. ${identificator}`,
     MISSING_NAME: (identificator) => `Missing name. ${identificator}`,
-    FILE_NOT_FOUND: (identificator) => `File not found for command: ${identificator}`,
+    FILE_NOT_FOUND: (identificator) => `File not found for command => ${identificator}`,
     MISSING_EXEC: (identificator) => `Command ${identificator} is missing exec function`,
-    LOAD_FAILED: (identificator) => `Failed to load command: ${identificator}`,
+    LOAD_FAILED: (identificator) => `Failed to load command => ${identificator}`,
   };
 
   static ERROR_REPLIES = {
@@ -31,7 +31,7 @@ export default class CommandLoader {
   }
 
   static async #generateErrorReply(code, identificator, cause) {
-    this.reporter.exec(code, { cause, args: identificator });
+    this.reporter.exec(code, { cause, args: identificator, ignore: this.#generateErrorReply });
     return [identificator, { exec: (interaction) => interaction.reply(this.ERROR_REPLIES[code]) }];
   }
 }

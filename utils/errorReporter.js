@@ -4,11 +4,13 @@ import cleanStack from 'clean-stack';
 const myCleanStack = (error) => cleanStack(error.stack, {pretty: true, basePath: "file:///C:/Bot/SageFrazhuz"});
 
 export class BotError extends Error {
-  constructor(code, { cause, primaryError, forcedReply, args } = {}, message) {
+  constructor(code, { cause, primaryError, forcedReply, ignore, args } = {}, message) {
     Error.stackTraceLimit = 0;
     super(message, {cause});
+    this.code = code;
+    this.name = code ?? 'BotError';
     Error.stackTraceLimit = 10;
-    Error.captureStackTrace(this, (new ErrorReporter).exec);
+    Error.captureStackTrace(this, ignore ?? (new ErrorReporter).exec);
     this.stack = myCleanStack(this);
     if (cause) {
       cause.stack = myCleanStack(cause);
@@ -17,8 +19,6 @@ export class BotError extends Error {
     }
     if (primaryError) this.stack += `\nPrimary error => ${primaryError.id}`;
     this.id = ++(BotError.index);
-    this.code = code;
-    this.name = code ?? 'BotError';
     this.context = cause?.context;
     this.options = {};
     this.options.primaryError = primaryError;
@@ -35,7 +35,6 @@ const ERROR_MESSAGES = {
     EMPTY_ERROR: () => 'Attempt to send empty error',
     FAILED_REPLY: () => `Attempt to reply user about error failed.`,
     TOO_MANY_ARGUMENTS: () => `Error and options cannot be specified at the same time.`,
-    UNEXPECTED_ERROR: ({first, second}) => `Unexpected secondary error while reporting an error: ${first}, ${second}`,
 }
 
 const DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
