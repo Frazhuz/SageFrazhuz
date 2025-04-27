@@ -1,4 +1,4 @@
-class CommandLoader {
+export default class CommandLoader {
   static ERROR_MESSAGES = {
     MISSING_PATH: (identificator) => `Missing path. ${identificator}`,
     MISSING_NAME: (identificator) => `Missing name. ${identificator}`,
@@ -22,7 +22,7 @@ class CommandLoader {
     if (!path) return this.#generateErrorReply('MISSING_PATH', name);
     
     try {
-      const command = require(path);
+      const { default: command } = await import(path);
       if (!command?.exec) return this.#generateErrorReply('MISSING_EXEC', name);
       return [name, command];
     } catch (error) {
@@ -35,5 +35,3 @@ class CommandLoader {
     return [identificator, { exec: (interaction) => interaction.reply(this.ERROR_REPLIES[code]) }];
   }
 }
-
-module.exports = CommandLoader;

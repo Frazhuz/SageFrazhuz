@@ -1,11 +1,21 @@
-const { inspect } = require('node:util');
+import { inspect } from 'node:util';
+import cleanStack from 'clean-stack';
 
-class BotError extends Error {
-  constructor(code, { cause, primaryError, forcedReply, args } = {}) {
-    let message = code ? '' : 'Non-wrapped error';
+const myCleanStack = (error) => cleanStack(error.stack, {pretty: true, basePath: "file:///C:/Bot/SageFrazhuz"});
+
+export class BotError extends Error {
+  constructor(code, { cause, primaryError, forcedReply, args } = {}, message) {
+    Error.stackTraceLimit = 0;
     super(message, {cause});
-    if (cause) this.stack += `\nCause: ${cause.id ?? cause.name}: ${cause.stack}`;
-    if (primaryError) this.stack += `\nPrimary error: ${primaryError.id}`;
+    Error.stackTraceLimit = 10;
+    Error.captureStackTrace(this, (new ErrorReporter).exec);
+    this.stack = myCleanStack(this);
+    if (cause) {
+      cause.stack = myCleanStack(cause);
+      if (!cause.id) cause.id = 0;
+      this.stack += `\nCause ${cause.id} => ${cause.stack}`;
+    }
+    if (primaryError) this.stack += `\nPrimary error => ${primaryError.id}`;
     this.id = ++(BotError.index);
     this.code = code;
     this.name = code ?? 'BotError';
@@ -20,7 +30,7 @@ class BotError extends Error {
 }
 
 const ERROR_MESSAGES = {
-    NO_INTERACTION: () => `No interaction was passed when attempting to log an error.`,
+    NO_INTERACTION: () => `No interaction was passed when attempting to reply about error.`,
     EXPIRED_INTERACTION: () => `Interaction is expired. Attempt to reply user about error failed.`,
     EMPTY_ERROR: () => 'Attempt to send empty error',
     FAILED_REPLY: () => `Attempt to reply user about error failed.`,
@@ -30,7 +40,7 @@ const ERROR_MESSAGES = {
 
 const DEFAULT_ERROR_REPLY = '❌ An error occurred while executing this command';
 
-class ErrorReporter {
+export class ErrorReporter {
   constructor(messages = {}, client, replies = {}, interaction) {
     this.messages = messages;
     this.client = client;
@@ -60,6 +70,7 @@ class ErrorReporter {
       if (first instanceof Error && second) return await this.#reporter.exec('TOO_MANY_ARGUMENTS', {cause: error});
       if (!error.context) error.context = this.#getContext();
       this.#log(error);
+      if (error.forcedReply && !this.interaction) return await this.#reporter.exec('NO_INTERACTION', {primaryError: error});
       if (this.interaction) this.#reply(error);
     }
     catch (error) {
@@ -75,8 +86,8 @@ class ErrorReporter {
   
   #constructError(code, options) {
     const func = this.messages[code];
-    options.message = func?.(options.args);
-    return new BotError(code, options);
+    const message = func?.(options.args);
+    return new BotError(code, options, message);
   }
 
   #getContext() {
@@ -93,7 +104,7 @@ class ErrorReporter {
   }
 
   #log(error) {
-    console.error(`${error.id}. ${error.context.text}\n${error.name}: ${error.stack}\n`);
+    console.error(`${error.id}. ${error.context.text}\n${error.stack}\n`);
   }
 
   async #reply(error) {
@@ -112,8 +123,3 @@ class ErrorReporter {
     }
   }
 }
-
-module.exports = {
-  BotError,
-  ErrorReporter
-};

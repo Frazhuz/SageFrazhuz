@@ -1,10 +1,9 @@
-"use strict"
-
 console.log("Script starts.");
-require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
-const CommandLoader = require('./utils/commandLoader.js');
-const { BotError, ErrorReporter } = require('./utils/errorReporter.js');
+import { BotError, ErrorReporter } from './utils/errorReporter.js';
+import dotenv from 'dotenv';
+dotenv.config();
+import { Client, GatewayIntentBits } from 'discord.js';
+import CommandLoader from './utils/commandLoader.js';
 console.log("Dependencies have been loaded!");
 
 
@@ -39,7 +38,7 @@ const client = new Client({
 console.log("Client and reporter are created. Attempting to log in...");
 
 let commands = {};
-client.login(process.env.DISCORD_TOKEN + "ddkdk")
+client.login(process.env.DISCORD_TOKEN)
   .catch(cause => reporter.exec('FAILED_LOGIN', {cause}))
   .then(
     () => {
